@@ -1,0 +1,38 @@
+﻿Analyzing gym_mobile_flutter...                                 
+
+  error - Undefined name 'Routes' - lib\app\modules\home\views\home_view.dart:128:32 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\app\modules\home\views\home_view.dart:147:39 - deprecated_member_use
+  error - Undefined name 'Routes' - lib\app\modules\home\views\home_view.dart:175:46 - undefined_identifier
+  error - The name 'Center' isn't a class - lib\app\modules\membership\controllers\membership_controller.dart:100:22 - creation_with_non_type
+  error - The method 'CircularProgressIndicator' isn't defined for the type 'MembershipController' - lib\app\modules\membership\controllers\membership_controller.dart:100:36 - undefined_method
+   info - Unnecessary use of multiple underscores - lib\app\modules\membership\views\membership_history_view.dart:20:31 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\app\modules\membership\views\membership_history_view.dart:64:67 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\app\modules\membership\views\membership_history_view.dart:64:102 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\app\modules\membership\views\membership_status_view.dart:73:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\app\modules\membership\views\membership_status_view.dart:73:107 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\app\modules\membership\views\membership_status_view.dart:131:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\app\modules\membership\views\packages_view.dart:27:39 - unnecessary_underscores
+  error - Undefined name 'Routes' - lib\app\modules\membership\views\renewal_view.dart:169:48 - undefined_identifier
+   info - The constant name 'SPLASH' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:2:16 - constant_identifier_names
+   info - The constant name 'ONBOARDING' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:3:16 - constant_identifier_names
+   info - The constant name 'LOGIN' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:4:16 - constant_identifier_names
+   info - The constant name 'REGISTER' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:5:16 - constant_identifier_names
+   info - The constant name 'FORGOT_PASSWORD' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:6:16 - constant_identifier_names
+   info - The constant name 'HOME' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:7:16 - constant_identifier_names
+   info - The constant name 'MEMBERSHIP' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:8:16 - constant_identifier_names
+   info - The constant name 'PACKAGES' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:9:16 - constant_identifier_names
+   info - The constant name 'RENEWAL' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:10:16 - constant_identifier_names
+   info - The constant name 'CHECKIN' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:11:16 - constant_identifier_names
+   info - The constant name 'TRAINER' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:12:16 - constant_identifier_names
+   info - The constant name 'TRAINER_DETAIL' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:13:16 - constant_identifier_names
+   info - The constant name 'WORKOUT_PLAN' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:14:16 - constant_identifier_names
+   info - The constant name 'WORKOUT_TRACKING' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:15:16 - constant_identifier_names
+   info - The constant name 'PROGRESS' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:16:16 - constant_identifier_names
+   info - The constant name 'NOTIFICATION' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:17:16 - constant_identifier_names
+   info - The constant name 'SUPPORT' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:18:16 - constant_identifier_names
+   info - The constant name 'PROFILE' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:19:16 - constant_identifier_names
+   info - The constant name 'MEMBERSHIP_HISTORY' isn't a lowerCamelCase identifier - lib\app\routes\app_routes.dart:20:16 - constant_identifier_names
+warning - Unused import: 'package:get/get.dart' - lib\core\widgets\bottom_nav_bar.dart:2:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\bottom_nav_bar.dart:80:39 - deprecated_member_use
+warning - This default clause is covered by the previous cases - lib\core\widgets\gym_button.dart:39:7 - unreachable_switch_default
+
