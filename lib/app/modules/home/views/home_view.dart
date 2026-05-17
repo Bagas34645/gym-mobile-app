@@ -32,16 +32,12 @@ class HomeView extends GetView<HomeController> {
           );
         }),
       ),
-      bottomNavigationBar: Obx(() => GymBottomNavBar(
-        currentIndex: controller.currentIndex.value,
-        onTap: controller.changeTab,
-      )),
-    );
-  }
-
-  Widget _buildPlaceholder(String title) {
-    return Center(
-      child: Text(title, style: AppTextStyles.headingSmall),
+      bottomNavigationBar: Obx(
+        () => GymBottomNavBar(
+          currentIndex: controller.currentIndex.value,
+          onTap: controller.changeTab,
+        ),
+      ),
     );
   }
 
@@ -55,19 +51,11 @@ class HomeView extends GetView<HomeController> {
           const SizedBox(height: 24),
           _buildMembershipCard(),
           const SizedBox(height: 24),
-          _buildQuickActions(),
-          const SizedBox(height: 24),
-          SectionHeader(
-            title: 'Workout Hari Ini',
-            onSeeAll: () {},
-          ),
+          SectionHeader(title: 'Workout Hari Ini', onSeeAll: () {}),
           const SizedBox(height: 16),
           _buildTodayWorkout(),
           const SizedBox(height: 24),
-          SectionHeader(
-            title: 'Aktivitas Terbaru',
-            onSeeAll: () {},
-          ),
+          SectionHeader(title: 'Aktivitas Terbaru', onSeeAll: () {}),
           const SizedBox(height: 16),
           _buildRecentActivity(),
         ],
@@ -92,12 +80,11 @@ class HomeView extends GetView<HomeController> {
               children: [
                 Text(
                   'Halo, ${controller.userName.value} 💪',
-                  style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(
-                  '12 Jul 2025',
-                  style: AppTextStyles.bodySmall,
-                ),
+                Text('12 Jul 2025', style: AppTextStyles.bodySmall),
               ],
             ),
           ],
@@ -105,7 +92,10 @@ class HomeView extends GetView<HomeController> {
         Stack(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: AppColors.textPrimary),
+              icon: const Icon(
+                Icons.notifications_none,
+                color: AppColors.textPrimary,
+              ),
               onPressed: () {},
             ),
             if (controller.hasNotification.value)
@@ -140,95 +130,87 @@ class HomeView extends GetView<HomeController> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: const Border(left: BorderSide(color: AppColors.accent, width: 4)),
+          border: const Border(
+            left: BorderSide(color: AppColors.accent, width: 4),
+          ),
         ),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'MEMBERSHIP AKTIF',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Paket Bulanan Premium', style: AppTextStyles.bodyLarge),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${controller.remainingDays.value}', style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent, fontSize: 40)),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text('Hari tersisa', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Berlaku hingga 31 Juli 2025', style: AppTextStyles.bodySmall),
-              OutlinedButton(
-                onPressed: () => Get.toNamed(Routes.PACKAGES),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.accent),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'MEMBERSHIP AKTIF',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Text('Perpanjang', style: AppTextStyles.bodySmall.copyWith(color: AppColors.accent)),
               ),
-            ],
-          ),
-        ],
-      ),
-    ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildActionItem(Icons.qr_code_scanner, 'Check-in', () => Get.toNamed(Routes.CHECKIN)),
-        _buildActionItem(Icons.people_outline, 'Trainer', controller.openTrainerList),
-        _buildActionItem(Icons.auto_graph, 'Progress', () {}),
-        _buildActionItem(Icons.chat_bubble_outline, 'Chat', () {}),
-      ],
-    );
-  }
-
-  Widget _buildActionItem(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.surface2,
-              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: AppColors.textPrimary, size: 28),
-          ),
-          const SizedBox(height: 8),
-          Text(label, style: AppTextStyles.bodySmall),
-        ],
+            const SizedBox(height: 16),
+            Text('Paket Bulanan Premium', style: AppTextStyles.bodyLarge),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${controller.remainingDays.value}',
+                  style: AppTextStyles.headingMedium.copyWith(
+                    color: AppColors.accent,
+                    fontSize: 40,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    'Hari tersisa',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Berlaku hingga 31 Juli 2025',
+                  style: AppTextStyles.bodySmall,
+                ),
+                OutlinedButton(
+                  onPressed: () => Get.toNamed(Routes.PACKAGES),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.accent),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    minimumSize: const Size(80, 32),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  child: Text(
+                    'Perpanjang',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTodayWorkout() {
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.WORKOUT_PLAN),
       child: GymCard(
         child: Row(
           children: [
@@ -246,13 +228,17 @@ class HomeView extends GetView<HomeController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Upper Body Strength', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Upper Body Strength',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text('6 Latihan • 45 Menit', style: AppTextStyles.bodySmall),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
           ],
         ),
       ),
@@ -282,14 +268,23 @@ class HomeView extends GetView<HomeController> {
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.door_front_door_outlined, color: AppColors.accent, size: 20),
+                  child: const Icon(
+                    Icons.door_front_door_outlined,
+                    color: AppColors.accent,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Check-in Gym', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Check-in Gym',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Text('Hari ini, 07:30 AM', style: AppTextStyles.bodySmall),
                   ],
                 ),

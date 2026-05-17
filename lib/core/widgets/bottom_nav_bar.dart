@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../theme/app_colors.dart';
 
 class GymBottomNavBar extends StatelessWidget {
@@ -18,15 +17,18 @@ class GymBottomNavBar extends StatelessWidget {
       height: 70,
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home'),
-          _buildNavItem(1, Icons.fitness_center_outlined, Icons.fitness_center, 'Workout'),
+          _buildNavItem(
+            1,
+            Icons.fitness_center_outlined,
+            Icons.fitness_center,
+            'Workout',
+          ),
           _buildCheckInItem(2),
           _buildNavItem(3, Icons.people_outline, Icons.people, 'Trainer'),
           _buildNavItem(4, Icons.person_outline, Icons.person, 'Profil'),
@@ -35,7 +37,12 @@ class GymBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData outlineIcon, IconData filledIcon, String label) {
+  Widget _buildNavItem(
+    int index,
+    IconData outlineIcon,
+    IconData filledIcon,
+    String label,
+  ) {
     final isSelected = currentIndex == index;
     return GestureDetector(
       onTap: () => onTap(index),
@@ -83,11 +90,7 @@ class GymBottomNavBar extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(
-          Icons.qr_code_scanner,
-          color: Colors.white,
-          size: 28,
-        ),
+        child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 28),
       ),
     );
   }

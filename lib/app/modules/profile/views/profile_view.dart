@@ -4,7 +4,6 @@ import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/gym_button.dart';
-import '../../../routes/app_routes.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
