@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../data/models/attendance_model.dart';
+import '../../../data/services/api_client.dart';
+import '../../../data/services/attendance_service.dart';
 import '../../../routes/app_routes.dart';
 
 class CheckinController extends GetxController {
   final ImagePicker _picker = ImagePicker();
+  final AttendanceService _attendanceService = AttendanceService.instance;
 
   // ── Loading states ──────────────────────────────────────────
   final RxBool isLoading = true.obs;
@@ -16,10 +19,16 @@ class CheckinController extends GetxController {
   final RxList<AttendanceModel> attendanceHistory = <AttendanceModel>[].obs;
 
   // ── Face registration ────────────────────────────────────────
-  final RxBool isFaceRegistered = false.obs;
+  // faceStatus: 'none' | 'pending' | 'verified' | 'rejected'
+  final RxString faceStatus = 'none'.obs;
+  final RxString rejectionReason = ''.obs;
   final RxList<File> capturedImages = <File>[].obs;
   final RxInt captureStep = 0.obs; // 0-4 (5 shots)
   final RxBool isCapturing = false.obs;
+
+  bool get isFaceRegistered => faceStatus.value == 'verified';
+  bool get isFacePending => faceStatus.value == 'pending';
+  bool get isFaceRejected => faceStatus.value == 'rejected';
 
   static const int totalCaptureSteps = 5;
 
@@ -50,54 +59,27 @@ class CheckinController extends GetxController {
   }
 
   // ── Attendance History ───────────────────────────────────────
-  void fetchAttendanceHistory() async {
+  Future<void> fetchAttendanceHistory() async {
     isLoading.value = true;
-    // Simulate API call: GET /api/attendance/history
-    await Future.delayed(const Duration(milliseconds: 1200));
+    try {
+      final results = await Future.wait([
+        _attendanceService.faceStatus(),
+        _attendanceService.history(perPage: 50),
+      ]);
 
-    final now = DateTime.now();
-    attendanceHistory.value = [
-      AttendanceModel(
-        id: '1',
-        checkInTime: now.subtract(const Duration(hours: 2)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-      AttendanceModel(
-        id: '2',
-        checkInTime: now.subtract(const Duration(days: 1, hours: 8)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-      AttendanceModel(
-        id: '3',
-        checkInTime: now.subtract(const Duration(days: 3, hours: 5)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-      AttendanceModel(
-        id: '4',
-        checkInTime: now.subtract(const Duration(days: 5, hours: 3)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-      AttendanceModel(
-        id: '5',
-        checkInTime: now.subtract(const Duration(days: 8, hours: 7)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-      AttendanceModel(
-        id: '6',
-        checkInTime: now.subtract(const Duration(days: 12, hours: 2)),
-        status: 'Hadir',
-        method: 'face_recognition',
-      ),
-    ];
+      final status = results[0] as Map<String, dynamic>;
+      final history = results[1] as List<AttendanceModel>;
 
-    // Simulate face-registration status from API
-    isFaceRegistered.value = true;
-    isLoading.value = false;
+      faceStatus.value = (status['status'] ?? 'none').toString();
+      rejectionReason.value = (status['rejection_reason'] ?? '').toString();
+      attendanceHistory.value = history;
+    } on ApiException catch (e) {
+      _showSnackbar('Gagal memuat data', e.message, isError: true);
+    } catch (_) {
+      _showSnackbar('Gagal memuat data', 'Periksa koneksi Anda.', isError: true);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   List<AttendanceModel> get filteredAttendance {
@@ -162,25 +144,45 @@ class CheckinController extends GetxController {
   }
 
   Future<void> uploadFaceImages() async {
+    if (capturedImages.isEmpty) return;
+
     isUploadingFace.value = true;
-    // Simulate API call: POST /api/members/face-register (multipart/form-data)
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Backend accepts a single image; send the frontal (first) capture.
+      await _attendanceService.registerFace(capturedImages.first);
+      faceStatus.value = 'pending';
+      rejectionReason.value = '';
 
-    isUploadingFace.value = false;
-    isFaceRegistered.value = true;
+      // Return to checkin page after success
+      Get.back();
+      await Future.delayed(const Duration(milliseconds: 300));
 
-    // Return to checkin page after success
-    Get.back();
-    await Future.delayed(const Duration(milliseconds: 300));
+      _showSnackbar(
+        'Berhasil dikirim',
+        'Wajah Anda menunggu verifikasi admin. Anda akan bisa check-in setelah disetujui.',
+        isError: false,
+      );
+    } on ApiException catch (e) {
+      _showSnackbar('Pendaftaran gagal', e.message, isError: true);
+    } catch (_) {
+      _showSnackbar('Pendaftaran gagal', 'Periksa koneksi Anda.', isError: true);
+    } finally {
+      isUploadingFace.value = false;
+    }
+  }
 
+  void _showSnackbar(String title, String message, {required bool isError}) {
     Get.snackbar(
-      'Berhasil! 🎉',
-      'Wajah Anda berhasil didaftarkan. Kini Anda bisa check-in otomatis di gym.',
+      title,
+      message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
+      backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
       colorText: Colors.white,
       duration: const Duration(seconds: 4),
-      icon: const Icon(Icons.check_circle, color: Colors.white),
+      icon: Icon(
+        isError ? Icons.error_outline : Icons.check_circle,
+        color: Colors.white,
+      ),
     );
   }
 

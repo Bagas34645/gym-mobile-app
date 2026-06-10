@@ -155,7 +155,44 @@ class CheckinView extends GetView<CheckinController> {
 
   // ── Face Registration Card ────────────────────────────────────
   Widget _buildFaceRegistrationCard() {
-    final isRegistered = controller.isFaceRegistered.value;
+    final status = controller.faceStatus.value;
+    final isRegistered = status == 'verified';
+    final isPending = status == 'pending';
+    final isRejected = status == 'rejected';
+
+    final accentColor = isRegistered
+        ? AppColors.success
+        : isPending
+            ? const Color(0xFFF59E0B)
+            : isRejected
+                ? AppColors.error
+                : AppColors.accent;
+
+    final title = isRegistered
+        ? 'Wajah Terverifikasi'
+        : isPending
+            ? 'Menunggu Verifikasi'
+            : isRejected
+                ? 'Pendaftaran Ditolak'
+                : 'Daftar Wajah';
+
+    final subtitle = isRegistered
+        ? 'Wajah Anda aktif. Check-in otomatis tersedia di kiosk resepsionis gym.'
+        : isPending
+            ? 'Foto wajah Anda sedang ditinjau admin. Mohon tunggu persetujuan.'
+            : isRejected
+                ? (controller.rejectionReason.value.isNotEmpty
+                    ? 'Ditolak: ${controller.rejectionReason.value}. Silakan daftar ulang.'
+                    : 'Pendaftaran ditolak. Silakan daftar ulang dengan foto yang jelas.')
+                : 'Daftarkan wajah untuk bisa check-in otomatis di gym.';
+
+    final buttonLabel = isRegistered
+        ? 'Perbarui Wajah'
+        : isPending
+            ? 'Daftar Ulang'
+            : isRejected
+                ? 'Daftar Ulang'
+                : 'Mulai Daftar';
 
     return Container(
       decoration: BoxDecoration(
@@ -163,20 +200,13 @@ class CheckinView extends GetView<CheckinController> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isRegistered
-              ? [
-                  AppColors.success.withOpacity(0.15),
-                  AppColors.surface2,
-                ]
-              : [
-                  AppColors.accent.withOpacity(0.12),
-                  AppColors.surface2,
-                ],
+          colors: [
+            accentColor.withOpacity(0.13),
+            AppColors.surface2,
+          ],
         ),
         border: Border.all(
-          color: isRegistered
-              ? AppColors.success.withOpacity(0.4)
-              : AppColors.accent.withOpacity(0.35),
+          color: accentColor.withOpacity(0.4),
           width: 1,
         ),
       ),
@@ -190,9 +220,7 @@ class CheckinView extends GetView<CheckinController> {
               height: 68,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isRegistered
-                    ? AppColors.success.withOpacity(0.15)
-                    : AppColors.accent.withOpacity(0.12),
+                color: accentColor.withOpacity(0.14),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -200,9 +228,13 @@ class CheckinView extends GetView<CheckinController> {
                   Icon(
                     isRegistered
                         ? Icons.face_retouching_natural
-                        : Icons.face_outlined,
+                        : isPending
+                            ? Icons.hourglass_top
+                            : isRejected
+                                ? Icons.error_outline
+                                : Icons.face_outlined,
                     size: 38,
-                    color: isRegistered ? AppColors.success : AppColors.accent,
+                    color: accentColor,
                   ),
                   if (isRegistered)
                     Positioned(
@@ -229,25 +261,27 @@ class CheckinView extends GetView<CheckinController> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        isRegistered ? 'Wajah Terdaftar' : 'Daftar Wajah',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      if (isRegistered) ...[
+                      if (isRegistered || isPending) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.2),
+                            color: accentColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'AKTIF',
+                            isRegistered ? 'AKTIF' : 'PENDING',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.success,
+                              color: accentColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 9,
                             ),
@@ -258,9 +292,7 @@ class CheckinView extends GetView<CheckinController> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isRegistered
-                        ? 'Scan wajah aktif untuk check-in otomatis di gym Anda.'
-                        : 'Daftarkan wajah (5 foto) untuk check-in otomatis.',
+                    subtitle,
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(height: 14),
@@ -269,18 +301,18 @@ class CheckinView extends GetView<CheckinController> {
                     child: ElevatedButton.icon(
                       onPressed: controller.startFaceRegistration,
                       icon: Icon(
-                        isRegistered ? Icons.refresh : Icons.add_a_photo_outlined,
+                        isRegistered || isPending
+                            ? Icons.refresh
+                            : Icons.add_a_photo_outlined,
                         size: 16,
                         color: Colors.white,
                       ),
                       label: Text(
-                        isRegistered ? 'Perbarui Wajah' : 'Mulai Daftar',
+                        buttonLabel,
                         style: AppTextStyles.button.copyWith(fontSize: 13),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isRegistered
-                            ? AppColors.success
-                            : AppColors.accent,
+                        backgroundColor: accentColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
                         ),
@@ -322,10 +354,10 @@ class CheckinView extends GetView<CheckinController> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildStep('1', 'Datang ke meja resepsionis gym'),
-          _buildStep('2', 'Buka website check-in di layar resepsionis'),
-          _buildStep('3', 'Posisikan wajah di depan kamera'),
-          _buildStep('4', 'Sistem verifikasi wajah secara otomatis ✓'),
+          _buildStep('1', 'Daftarkan wajah Anda di aplikasi ini'),
+          _buildStep('2', 'Tunggu admin memverifikasi foto wajah Anda'),
+          _buildStep('3', 'Datang ke kiosk resepsionis gym'),
+          _buildStep('4', 'Posisikan wajah di kamera, absen otomatis ✓'),
         ],
       ),
     );

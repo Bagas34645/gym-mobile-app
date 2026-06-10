@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/membership_controller.dart';
+import '../../../data/models/membership_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/gym_button.dart';
 
 class PackagesView extends GetView<MembershipController> {
@@ -20,7 +22,17 @@ class PackagesView extends GetView<MembershipController> {
           _buildToggleChips(),
           Expanded(
             child: Obx(() {
+              if (controller.isLoading.value && controller.allPackages.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
               final pkgs = controller.packages;
+              if (pkgs.isEmpty) {
+                return Center(
+                  child: Text('Belum ada paket tersedia',
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary)),
+                );
+              }
               return ListView.separated(
                 padding: const EdgeInsets.all(24),
                 itemCount: pkgs.length,
@@ -65,9 +77,9 @@ class PackagesView extends GetView<MembershipController> {
     );
   }
 
-  Widget _buildPackageCard(Map<String, dynamic> pkg) {
-    final isPopular = pkg['isPopular'] as bool;
-    
+  Widget _buildPackageCard(MembershipPackage pkg) {
+    final isPopular = controller.isPopular(pkg);
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -94,22 +106,22 @@ class PackagesView extends GetView<MembershipController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(pkg['name'], style: AppTextStyles.headingSmall),
+                Text(pkg.name, style: AppTextStyles.headingSmall),
                 const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(pkg['price'], style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent)),
+                    Text(formatRupiah(pkg.price), style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent)),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6.0, left: 4.0),
-                      child: Text(pkg['period'], style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      child: Text(controller.periodLabel(pkg), style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                ...((pkg['benefits'] as List<String>).map((b) => Padding(
+                ...pkg.benefits.map((b) => Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
                   child: Row(
                     children: [
@@ -118,7 +130,7 @@ class PackagesView extends GetView<MembershipController> {
                       Expanded(child: Text(b, style: AppTextStyles.bodyMedium)),
                     ],
                   ),
-                ))),
+                )),
                 const SizedBox(height: 32),
                 GymButton(
                   text: 'Pilih Paket',

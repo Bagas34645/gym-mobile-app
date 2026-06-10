@@ -1,106 +1,107 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import '../../../data/models/trainer_model.dart';
+import '../../../data/services/api_client.dart';
+import '../../../data/services/trainer_service.dart';
 
 class TrainerController extends GetxController {
-  // --- Trainer List & Detail ---
-  var selectedTrainer = Rxn<Map<String, dynamic>>();
+  final TrainerService _service = TrainerService.instance;
 
-  final List<Map<String, dynamic>> trainers = [
-    {
-      'id': 1,
-      'name': 'Bima Satria',
-      'specialty': 'Bodybuilding & Strength',
-      'experience': '5 Tahun',
-      'rating': 4.9,
-      'reviews': 124,
-      'image': 'https://via.placeholder.com/150', // placeholder
-      'about': 'Bima adalah pelatih bersertifikat dengan fokus pada hipertrofi otot dan pembentukan kekuatan inti. Ia telah membantu lebih dari 100 klien mencapai target fisik mereka.',
-      'availableSchedules': ['08:00', '10:00', '15:00', '18:00'],
-    },
-    {
-      'id': 2,
-      'name': 'Siti Anisa',
-      'specialty': 'Yoga & Flexibility',
-      'experience': '3 Tahun',
-      'rating': 4.8,
-      'reviews': 89,
-      'image': 'https://via.placeholder.com/150',
-      'about': 'Siti merupakan instruktur Yoga dengan pendekatan mindfulness. Spesialisasinya mencakup perbaikan postur, fleksibilitas, dan pemulihan cedera ringan.',
-      'availableSchedules': ['07:00', '09:00', '16:00'],
-    },
-    {
-      'id': 3,
-      'name': 'Reza Pratama',
-      'specialty': 'CrossFit & Cardio',
-      'experience': '7 Tahun',
-      'rating': 4.9,
-      'reviews': 210,
-      'image': 'https://via.placeholder.com/150',
-      'about': 'Reza fokus pada latihan intensitas tinggi (HIIT) dan fungsional. Sangat cocok bagi yang ingin menurunkan berat badan dengan cepat namun tetap bugar.',
-      'availableSchedules': ['06:00', '17:00', '19:00'],
+  final RxBool isLoading = false.obs;
+  final RxBool isLoadingDetail = false.obs;
+  final RxBool isBooking = false.obs;
+
+  final RxList<TrainerModel> trainers = <TrainerModel>[].obs;
+  final Rxn<TrainerModel> selectedTrainer = Rxn<TrainerModel>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadTrainers();
+  }
+
+  Future<void> loadTrainers() async {
+    isLoading.value = true;
+    try {
+      trainers.value = await _service.list();
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal memuat data trainer');
+    } finally {
+      isLoading.value = false;
     }
-  ];
+  }
 
-  void selectTrainer(Map<String, dynamic> trainer) {
+  Future<void> selectTrainer(TrainerModel trainer) async {
     selectedTrainer.value = trainer;
+    isLoadingDetail.value = true;
+    try {
+      // Fetch full detail (schedules, bio, certification).
+      selectedTrainer.value = await _service.detail(trainer.id);
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      // keep the list payload we already have
+    } finally {
+      isLoadingDetail.value = false;
+    }
   }
 
-  void bookSession(String time) {
+  /// Computes the next calendar date (yyyy-MM-dd) matching the schedule's
+  /// day-of-week, starting from today.
+  String _nextDateForDay(int dayOfWeek) {
+    final now = DateTime.now();
+    // Dart: Monday=1..Sunday=7; API: Sunday=0..Saturday=6.
+    final todayApi = now.weekday % 7;
+    var delta = (dayOfWeek - todayApi) % 7;
+    if (delta < 0) delta += 7;
+    if (delta == 0) delta = 7; // always book a future date
+    final date = now.add(Duration(days: delta));
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  Future<void> bookSchedule(TrainerSchedule schedule) async {
+    final trainer = selectedTrainer.value;
+    if (trainer == null) return;
+
+    isBooking.value = true;
+    try {
+      final sessionDate = _nextDateForDay(schedule.dayOfWeek);
+      final data = await _service.book(
+        trainerId: trainer.id,
+        scheduleId: schedule.id,
+        sessionDate: sessionDate,
+      );
+      Get.back(); // back to trainer list
+      Get.snackbar(
+        'Booking Berhasil',
+        'Sesi dengan ${trainer.name} pada '
+            '${data['session_date'] ?? sessionDate} '
+            '(${data['session_time'] ?? schedule.timeRange}) telah dipesan.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        icon: const Icon(Icons.check_circle, color: Colors.white),
+      );
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal memesan sesi');
+    } finally {
+      isBooking.value = false;
+    }
+  }
+
+  void _showError(String message) {
     Get.snackbar(
-      'Booking Berhasil',
-      'Sesi dengan ${selectedTrainer.value!['name']} pada jam $time telah dipesan.',
+      'Gagal',
+      message,
       snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
     );
-    Get.back(); // kembali ke list
-  }
-
-  // --- Workout Plan ---
-  final List<Map<String, dynamic>> workoutPlans = [
-    {
-      'day': 'Senin',
-      'focus': 'Chest & Triceps',
-      'exercises': [
-        {'name': 'Bench Press', 'sets': '4', 'reps': '10'},
-        {'name': 'Incline Dumbbell Press', 'sets': '3', 'reps': '12'},
-        {'name': 'Tricep Pushdown', 'sets': '3', 'reps': '15'},
-      ],
-      'isCompleted': false,
-    },
-    {
-      'day': 'Selasa',
-      'focus': 'Back & Biceps',
-      'exercises': [
-        {'name': 'Lat Pulldown', 'sets': '4', 'reps': '12'},
-        {'name': 'Barbell Row', 'sets': '3', 'reps': '10'},
-        {'name': 'Bicep Curl', 'sets': '3', 'reps': '15'},
-      ],
-      'isCompleted': false,
-    },
-    {
-      'day': 'Rabu',
-      'focus': 'Rest',
-      'exercises': [],
-      'isCompleted': true,
-    },
-  ];
-
-  // --- Workout Tracking ---
-  var currentExerciseIndex = 0.obs;
-  var currentSet = 1.obs;
-
-  void logSet(String weight, String reps) {
-    if (weight.isEmpty || reps.isEmpty) {
-      Get.snackbar('Error', 'Berat dan repetisi harus diisi');
-      return;
-    }
-    
-    // Asumsi selesai set ini
-    if (currentSet.value < 3) {
-      currentSet.value++;
-      Get.snackbar('Berhasil', 'Set ${currentSet.value - 1} dicatat!', snackPosition: SnackPosition.BOTTOM);
-    } else {
-      currentSet.value = 1;
-      Get.snackbar('Selesai', 'Latihan ini selesai!', snackPosition: SnackPosition.BOTTOM);
-      Get.back(); // Kembali setelah selesai 1 exercise
-    }
   }
 }

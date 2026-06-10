@@ -25,6 +25,7 @@ import '../modules/trainer/views/trainer_detail_view.dart';
 import '../modules/trainer/views/workout_plan_view.dart';
 import '../modules/trainer/views/workout_tracking_view.dart';
 import '../modules/trainer/bindings/trainer_binding.dart';
+import '../modules/trainer/bindings/workout_binding.dart';
 
 import '../modules/checkin/views/checkin_view.dart';
 import '../modules/checkin/views/face_register_view.dart';
@@ -105,12 +106,12 @@ class AppPages {
     GetPage(
       name: Routes.WORKOUT_PLAN,
       page: () => const WorkoutPlanView(),
-      binding: TrainerBinding(),
+      binding: WorkoutBinding(),
     ),
     GetPage(
       name: Routes.WORKOUT_TRACKING,
       page: () => const WorkoutTrackingView(),
-      binding: TrainerBinding(),
+      binding: WorkoutBinding(),
     ),
   ];
 }

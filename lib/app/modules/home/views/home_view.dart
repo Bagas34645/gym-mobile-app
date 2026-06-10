@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/bottom_nav_bar.dart';
 import '../../../../core/widgets/gym_card.dart';
 import '../../../../core/widgets/section_header.dart';
@@ -39,38 +40,36 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  Widget _buildPlaceholder(String title) {
-    return Center(
-      child: Text(title, style: AppTextStyles.headingSmall),
-    );
-  }
-
   Widget _buildDashboard(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 24),
-          _buildMembershipCard(),
-          const SizedBox(height: 24),
-          _buildQuickActions(),
-          const SizedBox(height: 24),
-          SectionHeader(
-            title: 'Workout Hari Ini',
-            onSeeAll: () {},
-          ),
-          const SizedBox(height: 16),
-          _buildTodayWorkout(),
-          const SizedBox(height: 24),
-          SectionHeader(
-            title: 'Aktivitas Terbaru',
-            onSeeAll: () {},
-          ),
-          const SizedBox(height: 16),
-          _buildRecentActivity(),
-        ],
+    return RefreshIndicator(
+      onRefresh: controller.loadDashboard,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildMembershipCard(),
+            const SizedBox(height: 24),
+            _buildQuickActions(),
+            const SizedBox(height: 24),
+            SectionHeader(
+              title: 'Workout Hari Ini',
+              onSeeAll: () => controller.changeTab(1),
+            ),
+            const SizedBox(height: 16),
+            _buildTodayWorkout(),
+            const SizedBox(height: 24),
+            SectionHeader(
+              title: 'Aktivitas Terbaru',
+              onSeeAll: () => Get.toNamed(Routes.CHECKIN),
+            ),
+            const SizedBox(height: 16),
+            _buildRecentActivity(),
+          ],
+        ),
       ),
     );
   }
@@ -90,12 +89,13 @@ class HomeView extends GetView<HomeController> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Obx(() => Text(
+                      'Halo, ${controller.userName} 💪',
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold),
+                    )),
                 Text(
-                  'Halo, ${controller.userName.value} 💪',
-                  style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '12 Jul 2025',
+                  formatDateLong(DateTime.now()),
                   style: AppTextStyles.bodySmall,
                 ),
               ],
@@ -140,56 +140,113 @@ class HomeView extends GetView<HomeController> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: const Border(left: BorderSide(color: AppColors.accent, width: 4)),
+          border:
+              const Border(left: BorderSide(color: AppColors.accent, width: 4)),
         ),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'MEMBERSHIP AKTIF',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Paket Bulanan Premium', style: AppTextStyles.bodyLarge),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${controller.remainingDays.value}', style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent, fontSize: 40)),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text('Hari tersisa', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Berlaku hingga 31 Juli 2025', style: AppTextStyles.bodySmall),
-              OutlinedButton(
-                onPressed: () => Get.toNamed(Routes.PACKAGES),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.accent),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Obx(() {
+          final m = controller.membership.value;
+          final active = m?.isActive ?? false;
+
+          if (m == null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'BELUM ADA MEMBERSHIP',
+                    style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.error, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                child: Text('Perpanjang', style: AppTextStyles.bodySmall.copyWith(color: AppColors.accent)),
+                const SizedBox(height: 16),
+                Text('Aktifkan membership Anda',
+                    style: AppTextStyles.bodyLarge),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: () => Get.toNamed(Routes.PACKAGES),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.accent),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                  child: Text('Lihat Paket',
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.accent)),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (active ? AppColors.accent : AppColors.error)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  active ? 'MEMBERSHIP AKTIF' : 'MEMBERSHIP TIDAK AKTIF',
+                  style: AppTextStyles.bodySmall.copyWith(
+                      color: active ? AppColors.accent : AppColors.error,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(m.packageName, style: AppTextStyles.bodyLarge),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('${m.remainingDays}',
+                      style: AppTextStyles.headingMedium
+                          .copyWith(color: AppColors.accent, fontSize: 40)),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('Hari tersisa',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textSecondary)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                        'Berlaku hingga ${formatDateLong(m.endDate)}',
+                        style: AppTextStyles.bodySmall),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => Get.toNamed(Routes.PACKAGES),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.accent),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      minimumSize: const Size(80, 32),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: Text('Perpanjang',
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.accent)),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
+          );
+        }),
       ),
-    ),
     );
   }
 

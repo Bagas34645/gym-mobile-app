@@ -1,84 +1,124 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../data/models/membership_model.dart';
+import '../../../data/services/api_client.dart';
+import '../../../data/services/membership_service.dart';
 import '../../../routes/app_routes.dart';
 
 class MembershipController extends GetxController {
-  // Membership Status State
-  var isActive = true.obs;
-  var packageName = 'Paket Bulanan Premium'.obs;
-  var startDate = '1 Juli 2025'.obs;
-  var endDate = '31 Juli 2025'.obs;
-  var remainingDays = 23.obs;
-  var progressPercentage = 0.75.obs; // 75% remaining
+  final MembershipService _service = MembershipService.instance;
+  final ImagePicker _picker = ImagePicker();
 
-  List<String> benefits = [
-    'Akses gym tanpa batas',
-    'Gratis 1x Personal Trainer',
-    'Akses kelas grup',
-    'Fasilitas loker premium',
-  ];
+  final RxBool isLoading = false.obs;
+  final Rxn<ActiveMembership> active = Rxn<ActiveMembership>();
+  final RxList<MembershipPackage> allPackages = <MembershipPackage>[].obs;
+  final RxList<MembershipHistoryEntry> historyList =
+      <MembershipHistoryEntry>[].obs;
 
-  // Packages List State
-  var selectedPackageType = 'Bulanan'.obs; // Harian, Bulanan, Tahunan
+  // Packages tab: Harian | Bulanan | Tahunan
+  final RxString selectedPackageType = 'Bulanan'.obs;
 
-  List<Map<String, dynamic>> get packages {
-    if (selectedPackageType.value == 'Harian') {
-      return [
-        {
-          'id': 1,
-          'name': 'Day Pass',
-          'price': 'Rp 50.000',
-          'period': '/hari',
-          'isPopular': false,
-          'benefits': ['Akses gym 1 hari', 'Loker standar'],
-        }
-      ];
-    } else if (selectedPackageType.value == 'Bulanan') {
-      return [
-        {
-          'id': 2,
-          'name': 'Basic Monthly',
-          'price': 'Rp 300.000',
-          'period': '/bulan',
-          'isPopular': false,
-          'benefits': ['Akses gym tanpa batas', 'Loker standar'],
-        },
-        {
-          'id': 3,
-          'name': 'Premium Monthly',
-          'price': 'Rp 450.000',
-          'period': '/bulan',
-          'isPopular': true,
-          'benefits': ['Akses gym tanpa batas', 'Gratis 1x PT', 'Akses kelas grup', 'Loker premium'],
-        }
-      ];
-    } else {
-      return [
-        {
-          'id': 4,
-          'name': 'Yearly VIP',
-          'price': 'Rp 4.500.000',
-          'period': '/tahun',
-          'isPopular': true,
-          'benefits': ['Semua fitur Premium', 'Gratis 12x PT', 'Merchandise eksklusif', 'Loker VIP'],
-        }
-      ];
+  // Renewal/checkout state
+  final RxInt renewalStep = 1.obs; // 1: confirm, 2: payment, 3: success
+  final RxString selectedPaymentMethod = ''.obs; // transfer | cash | qris
+  final Rxn<File> paymentProof = Rxn<File>();
+  final RxBool isProcessing = false.obs;
+  MembershipPackage? selectedPackageForRenewal;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    isLoading.value = true;
+    try {
+      final results = await Future.wait([
+        _service.active(),
+        _service.packages(),
+        _service.history(),
+      ]);
+      active.value = results[0] as ActiveMembership?;
+      allPackages.value = results[1] as List<MembershipPackage>;
+      historyList.value = results[2] as List<MembershipHistoryEntry>;
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal memuat data membership');
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  // Renewal/Checkout State
-  var renewalStep = 1.obs; // 1: Select Package, 2: Payment, 3: Success
-  var selectedPaymentMethod = ''.obs;
-  Map<String, dynamic>? selectedPackageForRenewal;
+  // ── Status ──────────────────────────────────────────────────────
+  bool get isActive => active.value?.isActive ?? false;
+  String get packageName => active.value?.packageName ?? 'Tidak ada paket';
+  int get remainingDays => active.value?.remainingDays ?? 0;
 
-  void changePackageType(String type) {
-    selectedPackageType.value = type;
+  double get progressPercentage {
+    final m = active.value;
+    if (m == null || m.startDate == null || m.endDate == null) return 0;
+    final total = m.endDate!.difference(m.startDate!).inDays;
+    if (total <= 0) return 0;
+    return (m.remainingDays / total).clamp(0.0, 1.0);
   }
 
-  void proceedToRenewal(Map<String, dynamic> pkg) {
+  /// Benefits resolved by matching the active package name against the catalog.
+  List<String> get benefits {
+    final name = active.value?.packageName;
+    if (name == null) return const [];
+    final match = allPackages.firstWhereOrNull((p) => p.name == name);
+    return match?.benefits ?? const [];
+  }
+
+  // ── Packages ────────────────────────────────────────────────────
+  void changePackageType(String type) => selectedPackageType.value = type;
+
+  List<MembershipPackage> get packages {
+    switch (selectedPackageType.value) {
+      case 'Harian':
+        return allPackages
+            .where((p) => p.type == 'daily' || p.type == 'weekly')
+            .toList();
+      case 'Tahunan':
+        return allPackages.where((p) => p.type == 'yearly').toList();
+      case 'Bulanan':
+      default:
+        return allPackages.where((p) => p.type == 'monthly').toList();
+    }
+  }
+
+  bool isPopular(MembershipPackage pkg) {
+    final list = packages;
+    if (list.length < 2) return false;
+    final maxPrice = list.map((p) => p.price).reduce((a, b) => a > b ? a : b);
+    return pkg.price == maxPrice;
+  }
+
+  String periodLabel(MembershipPackage pkg) {
+    switch (pkg.type) {
+      case 'daily':
+        return '/hari';
+      case 'weekly':
+        return '/minggu';
+      case 'yearly':
+        return '/tahun';
+      case 'monthly':
+      default:
+        return '/bulan';
+    }
+  }
+
+  // ── Renewal ─────────────────────────────────────────────────────
+  void proceedToRenewal(MembershipPackage pkg) {
     selectedPackageForRenewal = pkg;
     renewalStep.value = 1;
     selectedPaymentMethod.value = '';
+    paymentProof.value = null;
     Get.toNamed(Routes.RENEWAL);
   }
 
@@ -87,7 +127,12 @@ class MembershipController extends GetxController {
       renewalStep.value = 2;
     } else if (renewalStep.value == 2) {
       if (selectedPaymentMethod.value.isEmpty) {
-        Get.snackbar('Peringatan', 'Pilih metode pembayaran terlebih dahulu', snackPosition: SnackPosition.BOTTOM);
+        _showError('Pilih metode pembayaran terlebih dahulu');
+        return;
+      }
+      if (selectedPaymentMethod.value == 'transfer' &&
+          paymentProof.value == null) {
+        _showError('Unggah bukti transfer terlebih dahulu');
         return;
       }
       processPayment();
@@ -96,38 +141,53 @@ class MembershipController extends GetxController {
     }
   }
 
-  void processPayment() async {
-    // Simulate loading
-    Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
-    await Future.delayed(const Duration(seconds: 2));
-    Get.back(); // close dialog
-    renewalStep.value = 3;
-    isActive.value = true;
-    remainingDays.value += 30; // Mock extension
+  Future<void> pickPaymentProof() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (image != null) {
+      paymentProof.value = File(image.path);
+    }
   }
 
-  // History State
-  List<Map<String, dynamic>> history = [
-    {
-      'packageName': 'Paket Bulanan Premium',
-      'startDate': '1 Jul 2025',
-      'endDate': '31 Jul 2025',
-      'status': 'Aktif',
-      'price': 'Rp 450.000',
-    },
-    {
-      'packageName': 'Basic Monthly',
-      'startDate': '1 Jun 2025',
-      'endDate': '30 Jun 2025',
-      'status': 'Expired',
-      'price': 'Rp 300.000',
-    },
-    {
-      'packageName': 'Day Pass',
-      'startDate': '15 Mei 2025',
-      'endDate': '15 Mei 2025',
-      'status': 'Expired',
-      'price': 'Rp 50.000',
+  Future<void> processPayment() async {
+    final pkg = selectedPackageForRenewal;
+    if (pkg == null) return;
+
+    isProcessing.value = true;
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+    try {
+      await _service.renew(
+        packageId: pkg.id,
+        paymentMethod: selectedPaymentMethod.value,
+        paymentProof: paymentProof.value,
+      );
+      if (Get.isDialogOpen ?? false) Get.back();
+      renewalStep.value = 3;
+      await loadAll();
+    } on ApiException catch (e) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      _showError(e.message);
+    } catch (_) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      _showError('Gagal memproses perpanjangan');
+    } finally {
+      isProcessing.value = false;
     }
-  ];
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Gagal',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+    );
+  }
 }
