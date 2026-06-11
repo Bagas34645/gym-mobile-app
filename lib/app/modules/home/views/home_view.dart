@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controllers/home_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -64,6 +65,10 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildHeader() {
+    final today = DateFormat(
+      'EEEE, d MMMM yyyy',
+      'id_ID',
+    ).format(DateTime.now());
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -84,7 +89,7 @@ class HomeView extends GetView<HomeController> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text('12 Jul 2025', style: AppTextStyles.bodySmall),
+                Text(today, style: AppTextStyles.bodySmall),
               ],
             ),
           ],

@@ -6,7 +6,7 @@ enum ButtonType { primary, secondary, danger }
 
 class GymButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final ButtonType type;
 

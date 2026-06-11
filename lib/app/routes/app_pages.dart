@@ -30,6 +30,8 @@ import '../modules/checkin/views/checkin_view.dart';
 import '../modules/checkin/views/face_register_view.dart';
 import '../modules/checkin/bindings/checkin_binding.dart';
 
+import '../middlewares/auth_middleware.dart';
+
 class AppPages {
   static final routes = [
     GetPage(
@@ -61,6 +63,9 @@ class AppPages {
       name: Routes.HOME,
       page: () => const HomeView(),
       binding: HomeBinding(),
+      middlewares: [
+        AuthMiddleware(),
+      ],
     ),
     GetPage(
       name: Routes.MEMBERSHIP,

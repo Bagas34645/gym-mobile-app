@@ -23,93 +23,187 @@ class RegisterView extends GetView<AuthController> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Buat Akun Baru', style: AppTextStyles.headingSmall),
-            const SizedBox(height: 8),
-            Text('Bergabunglah dan mulai perjalanan fitness-mu', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-            const SizedBox(height: 32),
-            GymTextField(
-              label: 'Nama Lengkap',
-              hint: 'Masukkan nama lengkap',
-              prefixIcon: Icons.person_outline,
-              controller: controller.regNameController,
-            ),
-            const SizedBox(height: 16),
-            GymTextField(
-              label: 'Email',
-              hint: 'Masukkan alamat email',
-              prefixIcon: Icons.email_outlined,
-              controller: controller.regEmailController,
-            ),
-            const SizedBox(height: 16),
-            GymTextField(
-              label: 'Nomor HP',
-              hint: 'Masukkan nomor HP',
-              prefixIcon: Icons.phone_outlined,
-              controller: controller.regPhoneController,
-            ),
-            const SizedBox(height: 16),
-            GymTextField(
-              label: 'Password',
-              hint: 'Buat password',
-              prefixIcon: Icons.lock_outline,
-              isPassword: true,
-              controller: controller.regPasswordController,
-            ),
-            const SizedBox(height: 16),
-            GymTextField(
-              label: 'Konfirmasi Password',
-              hint: 'Masukkan ulang password',
-              prefixIcon: Icons.lock_outline,
-              isPassword: true,
-              controller: controller.regConfirmPasswordController,
-            ),
-            const SizedBox(height: 32),
-            Obx(() => GymButton(
-              text: 'Daftar Sekarang',
-              isLoading: controller.isRegisterLoading.value,
-              onPressed: controller.register,
-            )),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                const Expanded(child: Divider()),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('atau daftar dengan', style: AppTextStyles.bodySmall),
+        child: Form(
+          key: controller.registerFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Buat Akun Baru', style: AppTextStyles.headingSmall),
+              const SizedBox(height: 8),
+              Text(
+                'Bergabunglah dan mulai perjalanan fitness-mu',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
                 ),
-                const Expanded(child: Divider()),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.g_mobiledata, size: 32, color: Colors.white),
-                label: Text('Google', style: AppTextStyles.button.copyWith(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.divider),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                ),
-                onPressed: () {},
               ),
-            ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Sudah punya akun? ', style: AppTextStyles.bodyMedium),
-                GestureDetector(
-                  onTap: () => Get.back(),
-                  child: Text('Masuk', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 32),
+              GymTextField(
+                label: 'Nama Lengkap',
+                hint: 'Masukkan nama lengkap',
+                prefixIcon: Icons.person_outline,
+                controller: controller.regNameController,
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama lengkap wajib diisi';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              GymTextField(
+                label: 'Email',
+                hint: 'Masukkan alamat email',
+                prefixIcon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                controller: controller.regEmailController,
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email wajib diisi';
+                  }
+
+                  if (!GetUtils.isEmail(value.trim())) {
+                    return 'Format email tidak valid';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              GymTextField(
+                label: 'Nomor HP',
+                hint: 'Masukkan nomor HP',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                controller: controller.regPhoneController,
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nomor HP wajib diisi';
+                  }
+
+                  if (value.length < 10) {
+                    return 'Nomor HP tidak valid';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              GymTextField(
+                label: 'Password',
+                hint: 'Buat password',
+                prefixIcon: Icons.lock_outline,
+                isPassword: true,
+                controller: controller.regPasswordController,
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password wajib diisi';
+                  }
+
+                  if (value.length < 6) {
+                    return 'Password minimal 6 karakter';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              GymTextField(
+                label: 'Konfirmasi Password',
+                hint: 'Masukkan ulang password',
+                prefixIcon: Icons.lock_outline,
+                isPassword: true,
+                controller: controller.regConfirmPasswordController,
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Konfirmasi password wajib diisi';
+                  }
+
+                  if (value != controller.regPasswordController.text) {
+                    return 'Password tidak sama';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+
+              Obx(
+                () => GymButton(
+                  text: 'Daftar Sekarang',
+                  isLoading: controller.isRegisterLoading.value,
+                  onPressed: controller.isRegisterLoading.value
+                      ? null
+                      : controller.register,
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'atau daftar dengan',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton.icon(
+                  icon: const Icon(
+                    Icons.g_mobiledata,
+                    size: 32,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    'Google',
+                    style: AppTextStyles.button.copyWith(color: Colors.white),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.divider),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                  onPressed: controller.loginWithGoogle,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Sudah punya akun? ', style: AppTextStyles.bodyMedium),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Text(
+                      'Masuk',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

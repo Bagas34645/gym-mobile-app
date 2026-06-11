@@ -60,6 +60,10 @@ class CheckinView extends GetView<CheckinController> {
 
   // ── Sliver AppBar ────────────────────────────────────────────
   Widget _buildSliverAppBar(bool innerBoxIsScrolled) {
+    final today = DateFormat(
+      'EEEE, d MMMM yyyy',
+      'id_ID',
+    ).format(DateTime.now());
     return SliverAppBar(
       backgroundColor: AppColors.surface,
       expandedHeight: 100,
@@ -74,12 +78,11 @@ class CheckinView extends GetView<CheckinController> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Absensi & Check-in',
-                style: AppTextStyles.headingSmall.copyWith(letterSpacing: 0.5)),
             Text(
-              DateFormat('EEEE, d MMMM yyyy', 'id').format(DateTime.now()),
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+              'Absensi & Check-in',
+              style: AppTextStyles.headingSmall.copyWith(letterSpacing: 0.5),
             ),
+            Text(today, style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
           ],
         ),
       ),
@@ -164,14 +167,8 @@ class CheckinView extends GetView<CheckinController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isRegistered
-              ? [
-                  AppColors.success.withOpacity(0.15),
-                  AppColors.surface2,
-                ]
-              : [
-                  AppColors.accent.withOpacity(0.12),
-                  AppColors.surface2,
-                ],
+              ? [AppColors.success.withOpacity(0.15), AppColors.surface2]
+              : [AppColors.accent.withOpacity(0.12), AppColors.surface2],
         ),
         border: Border.all(
           color: isRegistered
@@ -215,8 +212,11 @@ class CheckinView extends GetView<CheckinController> {
                           color: AppColors.success,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.check,
-                            color: Colors.white, size: 12),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
                     ),
                 ],
@@ -239,7 +239,9 @@ class CheckinView extends GetView<CheckinController> {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.success.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(6),
@@ -269,7 +271,9 @@ class CheckinView extends GetView<CheckinController> {
                     child: ElevatedButton.icon(
                       onPressed: controller.startFaceRegistration,
                       icon: Icon(
-                        isRegistered ? Icons.refresh : Icons.add_a_photo_outlined,
+                        isRegistered
+                            ? Icons.refresh
+                            : Icons.add_a_photo_outlined,
                         size: 16,
                         color: Colors.white,
                       ),
@@ -316,8 +320,9 @@ class CheckinView extends GetView<CheckinController> {
               const SizedBox(width: 8),
               Text(
                 'Cara Check-in di Gym',
-                style: AppTextStyles.bodyMedium
-                    .copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -357,9 +362,13 @@ class CheckinView extends GetView<CheckinController> {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text,
-                style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary, fontSize: 12)),
+            child: Text(
+              text,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
       ),
@@ -386,14 +395,15 @@ class CheckinView extends GetView<CheckinController> {
                 onTap: () => controller.setFilter(filter),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.accent : AppColors.surface,
                     borderRadius: BorderRadius.circular(50),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.accent
-                          : AppColors.divider,
+                      color: isSelected ? AppColors.accent : AppColors.divider,
                     ),
                   ),
                   child: Text(
@@ -435,8 +445,10 @@ class CheckinView extends GetView<CheckinController> {
         final isToday = _isToday(attendance.checkInTime);
         final dateStr = isToday
             ? 'Hari Ini'
-            : DateFormat('EEE, d MMM yyyy', 'id')
-                .format(attendance.checkInTime);
+            : DateFormat(
+                'EEE, d MMM yyyy',
+                'id',
+              ).format(attendance.checkInTime);
         final timeStr = DateFormat('HH:mm').format(attendance.checkInTime);
         final isFace = attendance.method == 'face_recognition';
 
@@ -488,9 +500,10 @@ class CheckinView extends GetView<CheckinController> {
                           ),
                         ),
                         Text(
-                          DateFormat('MMM', 'id')
-                              .format(attendance.checkInTime)
-                              .toUpperCase(),
+                          DateFormat(
+                            'MMM',
+                            'id',
+                          ).format(attendance.checkInTime).toUpperCase(),
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: 10,
                             color: isToday
@@ -520,7 +533,9 @@ class CheckinView extends GetView<CheckinController> {
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.accent.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(6),
@@ -540,13 +555,17 @@ class CheckinView extends GetView<CheckinController> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.access_time,
-                                size: 12, color: AppColors.textSecondary),
+                            const Icon(
+                              Icons.access_time,
+                              size: 12,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '$dateStr · $timeStr WIB',
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(fontSize: 11),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -562,11 +581,10 @@ class CheckinView extends GetView<CheckinController> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              isFace
-                                  ? 'Face Recognition'
-                                  : 'Manual',
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(fontSize: 11),
+                              isFace ? 'Face Recognition' : 'Manual',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -623,14 +641,17 @@ class CheckinView extends GetView<CheckinController> {
         padding: const EdgeInsets.symmetric(vertical: 48),
         child: Column(
           children: [
-            Icon(Icons.history_toggle_off,
-                size: 56,
-                color: AppColors.textSecondary.withOpacity(0.4)),
+            Icon(
+              Icons.history_toggle_off,
+              size: 56,
+              color: AppColors.textSecondary.withOpacity(0.4),
+            ),
             const SizedBox(height: 16),
             Text(
               'Belum Ada Riwayat',
-              style: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
