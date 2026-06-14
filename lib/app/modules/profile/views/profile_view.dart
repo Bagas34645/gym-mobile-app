@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gym_mobile_flutter/app/modules/profile/views/about_app_view.dart';
+import 'package:gym_mobile_flutter/app/modules/profile/views/change_password_view.dart';
+import 'package:gym_mobile_flutter/app/modules/profile/views/edit_profile_view.dart';
+import 'package:gym_mobile_flutter/app/modules/profile/views/help_support_view.dart';
+import 'package:gym_mobile_flutter/app/modules/profile/views/privacy_policy_view.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -31,25 +36,56 @@ class ProfileView extends GetView<ProfileController> {
               child: Icon(Icons.person, color: AppColors.textPrimary, size: 50),
             ),
             const SizedBox(height: 16),
-            Obx(() => Text(controller.name.value, style: AppTextStyles.headingSmall)),
+            Obx(
+              () => Text(
+                controller.name.value,
+                style: AppTextStyles.headingSmall,
+              ),
+            ),
             const SizedBox(height: 4),
-            Obx(() => Text(controller.email.value, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary))),
+            Obx(
+              () => Text(
+                controller.email.value,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
-            
+
             _buildMenuSection('Akun', [
-              _buildMenuItem(Icons.person_outline, 'Edit Profil', () {}),
-              _buildMenuItem(Icons.lock_outline, 'Ubah Password', () {}),
-              _buildMenuItem(Icons.notifications_none, 'Notifikasi', () {}),
+              _buildMenuItem(
+                Icons.person_outline,
+                'Edit Profil',
+                () => Get.to(() => EditProfileView()),
+              ),
+              _buildMenuItem(
+                Icons.lock_outline,
+                'Ubah Password',
+                () => Get.to(() => ChangePasswordView()),
+              ),
             ]),
-            
+
             const SizedBox(height: 24),
-            
+
             _buildMenuSection('Lainnya', [
-              _buildMenuItem(Icons.help_outline, 'Bantuan & Dukungan', () {}),
-              _buildMenuItem(Icons.privacy_tip_outlined, 'Kebijakan Privasi', () {}),
-              _buildMenuItem(Icons.info_outline, 'Tentang Aplikasi', () {}),
+              _buildMenuItem(
+                Icons.help_outline,
+                'Bantuan & Dukungan',
+                () => Get.to(() => HelpSupportView()),
+              ),
+              _buildMenuItem(
+                Icons.privacy_tip_outlined,
+                'Kebijakan Privasi',
+                () => Get.to(() => PrivacyPolicyView()),
+              ),
+              _buildMenuItem(
+                Icons.info_outline,
+                'Tentang Aplikasi',
+                () => Get.to(() => AboutAppView()),
+              ),
             ]),
-            
+
             const SizedBox(height: 32),
             GymButton(
               text: 'Keluar',

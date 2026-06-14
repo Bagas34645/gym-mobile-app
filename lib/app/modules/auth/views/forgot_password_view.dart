@@ -53,7 +53,7 @@ class ForgotPasswordView extends GetView<AuthController> {
           GymButton(
             text: 'Kirim Kode OTP',
             isLoading: controller.isForgotLoading.value,
-            onPressed: controller.sendOtp,
+            onPressed: controller.sendResetPassword,
           ),
         ],
       ),
