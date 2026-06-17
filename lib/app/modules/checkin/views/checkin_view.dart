@@ -167,13 +167,13 @@ class CheckinView extends GetView<CheckinController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isRegistered
-              ? [AppColors.success.withOpacity(0.15), AppColors.surface2]
-              : [AppColors.accent.withOpacity(0.12), AppColors.surface2],
+              ? [AppColors.success.withValues(alpha: 0.15), AppColors.surface2]
+              : [AppColors.accent.withValues(alpha: 0.12), AppColors.surface2],
         ),
         border: Border.all(
           color: isRegistered
-              ? AppColors.success.withOpacity(0.4)
-              : AppColors.accent.withOpacity(0.35),
+              ? AppColors.success.withValues(alpha: 0.4)
+              : AppColors.accent.withValues(alpha: 0.35),
           width: 1,
         ),
       ),
@@ -188,8 +188,8 @@ class CheckinView extends GetView<CheckinController> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isRegistered
-                    ? AppColors.success.withOpacity(0.15)
-                    : AppColors.accent.withOpacity(0.12),
+                    ? AppColors.success.withValues(alpha: 0.15)
+                    : AppColors.accent.withValues(alpha: 0.12),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -243,7 +243,7 @@ class CheckinView extends GetView<CheckinController> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.2),
+                            color: AppColors.success.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -346,7 +346,7 @@ class CheckinView extends GetView<CheckinController> {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.15),
+              color: AppColors.accent.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -387,7 +387,7 @@ class CheckinView extends GetView<CheckinController> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: controller.filterOptions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final filter = controller.filterOptions[index];
               final isSelected = controller.selectedFilter.value == filter;
@@ -439,7 +439,7 @@ class CheckinView extends GetView<CheckinController> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final attendance = list[index];
         final isToday = _isToday(attendance.checkInTime);
@@ -468,7 +468,7 @@ class CheckinView extends GetView<CheckinController> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isToday
-                    ? AppColors.accent.withOpacity(0.3)
+                    ? AppColors.accent.withValues(alpha: 0.3)
                     : AppColors.divider,
                 width: isToday ? 1.5 : 1,
               ),
@@ -483,7 +483,7 @@ class CheckinView extends GetView<CheckinController> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isToday
-                          ? AppColors.accent.withOpacity(0.12)
+                          ? AppColors.accent.withValues(alpha: 0.12)
                           : AppColors.surface2,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -537,7 +537,9 @@ class CheckinView extends GetView<CheckinController> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accent.withOpacity(0.15),
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -609,8 +611,8 @@ class CheckinView extends GetView<CheckinController> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isHadir
-            ? AppColors.success.withOpacity(0.12)
-            : AppColors.error.withOpacity(0.12),
+            ? AppColors.success.withValues(alpha: 0.12)
+            : AppColors.error.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -644,7 +646,7 @@ class CheckinView extends GetView<CheckinController> {
             Icon(
               Icons.history_toggle_off,
               size: 56,
-              color: AppColors.textSecondary.withOpacity(0.4),
+              color: AppColors.textSecondary.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(

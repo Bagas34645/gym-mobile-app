@@ -15,7 +15,11 @@ class FaceRegisterView extends GetView<CheckinController> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text('Daftar Wajah', style: AppTextStyles.headingSmall),
@@ -51,9 +55,7 @@ class FaceRegisterView extends GetView<CheckinController> {
             const SizedBox(height: 32),
 
             // ── Face preview area
-            Expanded(
-              child: _buildFacePreviewArea(step, icon, instruction),
-            ),
+            Expanded(child: _buildFacePreviewArea(step, icon, instruction)),
             const SizedBox(height: 32),
 
             // ── Captured thumbnails
@@ -116,8 +118,8 @@ class FaceRegisterView extends GetView<CheckinController> {
                   color: i < step
                       ? AppColors.success
                       : i == step
-                          ? AppColors.accent
-                          : AppColors.surface2,
+                      ? AppColors.accent
+                      : AppColors.surface2,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -147,7 +149,7 @@ class FaceRegisterView extends GetView<CheckinController> {
               shape: BoxShape.circle,
               color: AppColors.surface2,
               border: Border.all(
-                color: AppColors.accent.withOpacity(0.4),
+                color: AppColors.accent.withValues(alpha: 0.4),
                 width: 2,
               ),
             ),
@@ -163,7 +165,7 @@ class FaceRegisterView extends GetView<CheckinController> {
                     icon,
                     key: ValueKey(step),
                     size: 80,
-                    color: AppColors.accent.withOpacity(0.7),
+                    color: AppColors.accent.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -269,7 +271,7 @@ class FaceRegisterView extends GetView<CheckinController> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: controller.capturedImages.length,
-        separatorBuilder: (_, _s) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           return Container(
             width: 56,
@@ -286,7 +288,11 @@ class FaceRegisterView extends GetView<CheckinController> {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: EdgeInsets.all(2),
-                child: Icon(Icons.check_circle, color: AppColors.success, size: 16),
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 16,
+                ),
               ),
             ),
           );
@@ -299,7 +305,9 @@ class FaceRegisterView extends GetView<CheckinController> {
     return Column(
       children: [
         GestureDetector(
-          onTap: controller.isCapturing.value ? null : controller.captureNextImage,
+          onTap: controller.isCapturing.value
+              ? null
+              : controller.captureNextImage,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             width: 80,
@@ -313,7 +321,7 @@ class FaceRegisterView extends GetView<CheckinController> {
                   ? []
                   : [
                       BoxShadow(
-                        color: AppColors.accent.withOpacity(0.35),
+                        color: AppColors.accent.withValues(alpha: 0.35),
                         blurRadius: 20,
                         spreadRadius: 4,
                       ),
@@ -328,10 +336,7 @@ class FaceRegisterView extends GetView<CheckinController> {
           ),
         ),
         const SizedBox(height: 12),
-        Text(
-          'Tekan untuk mengambil foto',
-          style: AppTextStyles.bodySmall,
-        ),
+        Text('Tekan untuk mengambil foto', style: AppTextStyles.bodySmall),
       ],
     );
   }
@@ -348,15 +353,19 @@ class FaceRegisterView extends GetView<CheckinController> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.success.withOpacity(0.3),
+                  color: AppColors.success.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: AppColors.success, size: 32),
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 32,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -414,12 +423,13 @@ class FaceRegisterView extends GetView<CheckinController> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(12)),
+                              bottom: Radius.circular(12),
+                            ),
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                Colors.black.withOpacity(0.7),
+                                Colors.black.withValues(alpha: 0.7),
                                 Colors.transparent,
                               ],
                             ),
@@ -454,7 +464,8 @@ class FaceRegisterView extends GetView<CheckinController> {
                       foregroundColor: AppColors.textSecondary,
                       side: const BorderSide(color: AppColors.divider),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
                       minimumSize: const Size(0, 56),
                     ),
                   ),
@@ -464,15 +475,17 @@ class FaceRegisterView extends GetView<CheckinController> {
                   flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: controller.uploadFaceImages,
-                    icon: const Icon(Icons.upload, size: 18, color: Colors.white),
-                    label: Text(
-                      'Daftarkan Wajah',
-                      style: AppTextStyles.button,
+                    icon: const Icon(
+                      Icons.upload,
+                      size: 18,
+                      color: Colors.white,
                     ),
+                    label: Text('Daftarkan Wajah', style: AppTextStyles.button),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
                       minimumSize: const Size(0, 56),
                       elevation: 0,
                     ),
@@ -500,9 +513,9 @@ class FaceRegisterView extends GetView<CheckinController> {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.accent.withOpacity(0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: AppColors.accent.withOpacity(0.3),
+                  color: AppColors.accent.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -517,7 +530,9 @@ class FaceRegisterView extends GetView<CheckinController> {
             const SizedBox(height: 32),
             Text(
               'Mendaftarkan Wajah...',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
             Text(

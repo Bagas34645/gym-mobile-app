@@ -24,7 +24,7 @@ class PackagesView extends GetView<MembershipController> {
               return ListView.separated(
                 padding: const EdgeInsets.all(24),
                 itemCount: pkgs.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 24),
+                separatorBuilder: (_, _) => const SizedBox(height: 24),
                 itemBuilder: (context, index) {
                   return _buildPackageCard(pkgs[index]);
                 },
@@ -39,40 +39,49 @@ class PackagesView extends GetView<MembershipController> {
   Widget _buildToggleChips() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Obx(() => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: ['Harian', 'Bulanan', 'Tahunan'].map((type) {
-          final isSelected = controller.selectedPackageType.value == type;
-          return GestureDetector(
-            onTap: () => controller.changePackageType(type),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.accent : AppColors.surface2,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Text(
-                type,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      child: Obx(
+        () => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: ['Harian', 'Bulanan', 'Tahunan'].map((type) {
+            final isSelected = controller.selectedPackageType.value == type;
+            return GestureDetector(
+              onTap: () => controller.changePackageType(type),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.accent : AppColors.surface2,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(
+                  type,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
-      )),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 
   Widget _buildPackageCard(Map<String, dynamic> pkg) {
     final isPopular = pkg['isPopular'] as bool;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: isPopular ? Border.all(color: AppColors.accent, width: 2) : null,
+        border: isPopular
+            ? Border.all(color: AppColors.accent, width: 2)
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +95,13 @@ class PackagesView extends GetView<MembershipController> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: Center(
-                child: Text('TERPOPULER', style: AppTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'TERPOPULER',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           Padding(
@@ -99,26 +114,44 @@ class PackagesView extends GetView<MembershipController> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(pkg['price'], style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent)),
+                    Text(
+                      pkg['price'],
+                      style: AppTextStyles.headingMedium.copyWith(
+                        color: AppColors.accent,
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6.0, left: 4.0),
-                      child: Text(pkg['period'], style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      child: Text(
+                        pkg['period'],
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                ...((pkg['benefits'] as List<String>).map((b) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text(b, style: AppTextStyles.bodyMedium)),
-                    ],
+                ...((pkg['benefits'] as List<String>).map(
+                  (b) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(b, style: AppTextStyles.bodyMedium),
+                        ),
+                      ],
+                    ),
                   ),
-                ))),
+                )),
                 const SizedBox(height: 32),
                 GymButton(
                   text: 'Pilih Paket',

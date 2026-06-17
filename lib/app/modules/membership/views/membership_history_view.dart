@@ -17,11 +17,11 @@ class MembershipHistoryView extends GetView<MembershipController> {
       body: ListView.separated(
         padding: const EdgeInsets.all(24),
         itemCount: controller.history.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 24),
+        separatorBuilder: (_, _) => const SizedBox(height: 24),
         itemBuilder: (context, index) {
           final item = controller.history[index];
           final isActive = item['status'] == 'Aktif';
-          
+
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,17 +57,31 @@ class MembershipHistoryView extends GetView<MembershipController> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(child: Text(item['packageName'], style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold))),
+                          Expanded(
+                            child: Text(
+                              item['packageName'],
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isActive ? AppColors.success.withOpacity(0.2) : AppColors.error.withOpacity(0.2),
+                              color: isActive
+                                  ? AppColors.success.withValues(alpha: 0.2)
+                                  : AppColors.error.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               item['status'],
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: isActive ? AppColors.success : AppColors.error,
+                                color: isActive
+                                    ? AppColors.success
+                                    : AppColors.error,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -75,9 +89,20 @@ class MembershipHistoryView extends GetView<MembershipController> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text('${item['startDate']} - ${item['endDate']}', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      Text(
+                        '${item['startDate']} - ${item['endDate']}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text(item['price'], style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold)),
+                      Text(
+                        item['price'],
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
