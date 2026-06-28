@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+// import 'package:get/get.dart';
 import '../theme/app_colors.dart';
 
 class GymBottomNavBar extends StatelessWidget {

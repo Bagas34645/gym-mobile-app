@@ -41,7 +41,12 @@ class ForgotPasswordView extends GetView<AuthController> {
         children: [
           Text('Reset Password', style: AppTextStyles.headingSmall),
           const SizedBox(height: 8),
-          Text('Masukkan email atau nomor HP yang terdaftar', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            'Masukkan email atau nomor HP yang terdaftar',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 32),
           GymTextField(
             label: 'Email / Nomor HP',
@@ -50,10 +55,12 @@ class ForgotPasswordView extends GetView<AuthController> {
             controller: controller.forgotEmailController,
           ),
           const SizedBox(height: 32),
-          GymButton(
-            text: 'Kirim Kode OTP',
-            isLoading: controller.isForgotLoading.value,
-            onPressed: controller.sendOtp,
+          Obx(
+            () => GymButton(
+              text: 'Kirim Kode OTP',
+              isLoading: controller.isForgotLoading.value,
+              onPressed: controller.sendOtp,
+            ),
           ),
         ],
       ),
@@ -68,23 +75,33 @@ class ForgotPasswordView extends GetView<AuthController> {
         children: [
           Text('Masukkan Kode OTP', style: AppTextStyles.headingSmall),
           const SizedBox(height: 8),
-          Text('Kode OTP telah dikirimkan ke email/HP Anda', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            'Kode OTP telah dikirimkan ke email/HP Anda',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 32),
           GymTextField(
             label: 'Kode OTP',
             hint: 'Masukkan 6 digit kode',
             prefixIcon: Icons.lock_clock_outlined,
-            controller: controller.otpController,
+            controller: controller.forgotOtpController,
           ),
           const SizedBox(height: 16),
           Center(
-            child: Text('Kirim ulang dalam 00:59', style: AppTextStyles.bodySmall),
+            child: Text(
+              'Kirim ulang dalam 00:59',
+              style: AppTextStyles.bodySmall,
+            ),
           ),
           const SizedBox(height: 32),
-          GymButton(
-            text: 'Verifikasi',
-            isLoading: controller.isForgotLoading.value,
-            onPressed: controller.verifyOtp,
+          Obx(
+            () => GymButton(
+              text: 'Verifikasi',
+              isLoading: controller.isForgotLoading.value,
+              onPressed: controller.verifyOtp,
+            ),
           ),
         ],
       ),
@@ -99,7 +116,12 @@ class ForgotPasswordView extends GetView<AuthController> {
         children: [
           Text('Buat Password Baru', style: AppTextStyles.headingSmall),
           const SizedBox(height: 8),
-          Text('Silakan buat password baru untuk akun Anda', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            'Silakan buat password baru untuk akun Anda',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 32),
           GymTextField(
             label: 'Password Baru',
@@ -117,10 +139,12 @@ class ForgotPasswordView extends GetView<AuthController> {
             controller: controller.confirmNewPasswordController,
           ),
           const SizedBox(height: 32),
-          GymButton(
-            text: 'Simpan Password',
-            isLoading: controller.isForgotLoading.value,
-            onPressed: controller.resetPassword,
+          Obx(
+            () => GymButton(
+              text: 'Simpan Password',
+              isLoading: controller.isForgotLoading.value,
+              onPressed: controller.resetPassword,
+            ),
           ),
         ],
       ),

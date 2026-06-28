@@ -8,6 +8,7 @@ import '../modules/onboarding/bindings/onboarding_binding.dart';
 
 import '../modules/auth/views/login_view.dart';
 import '../modules/auth/views/register_view.dart';
+import '../modules/auth/views/register_otp_view.dart';
 import '../modules/auth/views/forgot_password_view.dart';
 import '../modules/auth/bindings/auth_binding.dart';
 
@@ -51,6 +52,11 @@ class AppPages {
     GetPage(
       name: Routes.REGISTER,
       page: () => const RegisterView(),
+      binding: AuthBinding(),
+    ),
+    GetPage(
+      name: Routes.REGISTER_OTP,
+      page: () => const RegisterOtpView(),
       binding: AuthBinding(),
     ),
     GetPage(

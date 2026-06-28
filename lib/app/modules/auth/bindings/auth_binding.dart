@@ -4,6 +4,7 @@ import '../controllers/auth_controller.dart';
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put<AuthController>(AuthController());
+    // ✅ fenix: true — otomatis recreate controller kalau sudah di-dispose
+    Get.lazyPut<AuthController>(() => AuthController(), fenix: true);
   }
 }

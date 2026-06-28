@@ -3,6 +3,7 @@ abstract class Routes {
   static const ONBOARDING = '/onboarding';
   static const LOGIN = '/login';
   static const REGISTER = '/register';
+  static const REGISTER_OTP = '/register-otp';
   static const FORGOT_PASSWORD = '/forgot-password';
   static const HOME = '/home'; // Usually acts as shell holding the bottom nav
   static const MEMBERSHIP = '/membership';

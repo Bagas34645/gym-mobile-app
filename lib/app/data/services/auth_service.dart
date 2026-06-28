@@ -124,6 +124,14 @@ class AuthService {
     );
   }
 
+  Future<void> resendOtp({required String identifier}) async {
+    await _api.post(
+      '/auth/resend-otp',
+      data: {'identifier': identifier},
+      skipAuth: true,
+    );
+  }
+
   Future<void> resetPassword({
     required String identifier,
     required String code,
