@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "627711116395",
+    "project_id": "gym-app-99a37",
+    "storage_bucket": "gym-app-99a37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627711116395:android:1683f98c34e4f537ec1d2e",
+        "android_client_info": {
+          "package_name": "com.diyas.latihan_pattern_getx"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627711116395-1b3u758kg5jacb0rlcdk9cq20ne04lo0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.diyas.latihan_pattern_getx",
+            "certificate_hash": "cf695c5de1fa8fc41f1f88b68f9073780bc584b8"
+          }
+        },
+        {
+          "client_id": "627711116395-9uo5dj0m8hgjc12721n98l3ajgsm1era.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjQyczwOo7UOId7db2Xv7mJt86Hi1RgnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627711116395-9uo5dj0m8hgjc12721n98l3ajgsm1era.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "627711116395-8npucvo5nouem69uek9587c4ppmevisi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gym.gymMobileFlutter"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627711116395:android:78cd28b17b8b2c6eec1d2e",
+        "android_client_info": {
+          "package_name": "com.gym.gym_mobile_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627711116395-up3qbblmvhlpoce24idcmuj8seglu07o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gym.gym_mobile_flutter",
+            "certificate_hash": "cf695c5de1fa8fc41f1f88b68f9073780bc584b8"
+          }
+        },
+        {
+          "client_id": "627711116395-9uo5dj0m8hgjc12721n98l3ajgsm1era.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjQyczwOo7UOId7db2Xv7mJt86Hi1RgnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627711116395-9uo5dj0m8hgjc12721n98l3ajgsm1era.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "627711116395-8npucvo5nouem69uek9587c4ppmevisi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gym.gymMobileFlutter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

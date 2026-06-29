@@ -100,6 +100,19 @@ class AuthService {
     );
   }
 
+  Future<void> googleLogin({required String idToken}) async {
+    final body = await _api.post(
+      '/auth/login/google',
+      data: {'id_token': idToken},
+      skipAuth: true,
+    );
+    final data = body['data'] as Map<String, dynamic>;
+    await TokenStorage.instance.saveTokens(
+      accessToken: data['access_token'] as String,
+      refreshToken: data['refresh_token'] as String,
+    );
+  }
+
   Future<int> forgotPassword({
     required String identifier,
     String method = 'email',

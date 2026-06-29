@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gym_mobile_flutter/app/data/services/google_auth_service.dart';
+// import 'package:gym_mobile_flutter/app/data/services/token_storage.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/session_service.dart';
@@ -11,6 +13,7 @@ class AuthController extends GetxController {
   final loginPasswordController = TextEditingController();
   var isLoginLoading = false.obs;
   var rememberMe = false.obs;
+  var isGoogleLoading = false.obs;
 
   // Register State
   final regNameController = TextEditingController();
@@ -262,6 +265,39 @@ class AuthController extends GetxController {
       isForgotLoading.value = false;
     }
   }
+
+  // Tambah method
+  Future<void> loginWithGoogle() async {
+    isGoogleLoading.value = true;
+    try {
+      final idToken = await GoogleAuthService.instance.signInAndGetIdToken();
+      if (idToken == null) {
+        _showError('Login Google dibatalkan.');
+        return;
+      }
+      await AuthService.instance.googleLogin(idToken: idToken);
+      await _loadSessionAndGoHome();
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal login dengan Google. Coba lagi.');
+    } finally {
+      isGoogleLoading.value = false;
+    }
+  }
+
+  // Future<void> googleLogin({required String idToken}) async {
+  //   final body = await _api.post(
+  //     '/auth/login/google',
+  //     data: {'id_token': idToken},
+  //     skipAuth: true,
+  //   );
+  //   final data = body['data'] as Map<String, dynamic>;
+  //   await TokenStorage.instance.saveTokens(
+  //     accessToken: data['access_token'] as String,
+  //     refreshToken: data['refresh_token'] as String,
+  //   );
+  // }
 
   Future<void> _loadSessionAndGoHome() async {
     try {
