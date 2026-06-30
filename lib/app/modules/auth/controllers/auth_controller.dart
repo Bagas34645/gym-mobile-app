@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/api_client.dart';
@@ -19,17 +21,29 @@ class AuthController extends GetxController {
   final regPasswordController = TextEditingController();
   final regConfirmPasswordController = TextEditingController();
   var isRegisterLoading = false.obs;
+  var registerOtpEmail = ''.obs;
+  var isRegisterOtpLoading = false.obs;
+
+  // OTP register dan forgot password punya controller masing-masing.
+  final regOtpController = TextEditingController();
+  final forgotOtpController = TextEditingController();
 
   // Forgot Password State
-  var currentStep = 1.obs; // 1: Email, 2: OTP, 3: New Password
+  var currentStep = 1.obs;
   final forgotEmailController = TextEditingController();
-  final otpController = TextEditingController();
   final newPasswordController = TextEditingController();
   final confirmNewPasswordController = TextEditingController();
   var isForgotLoading = false.obs;
 
+  // Cooldown kirim ulang OTP (dipakai register & forgot password).
+  var resendSeconds = 0.obs;
+  Timer? _resendTimer;
+
   @override
   void onClose() {
+    // Binding memakai fenix:true, jadi controller akan di-recreate otomatis
+    // bila dibutuhkan lagi. Resource tetap wajib dilepas di sini.
+    _resendTimer?.cancel();
     loginEmailController.dispose();
     loginPasswordController.dispose();
     regNameController.dispose();
@@ -37,11 +51,32 @@ class AuthController extends GetxController {
     regPhoneController.dispose();
     regPasswordController.dispose();
     regConfirmPasswordController.dispose();
+    regOtpController.dispose();
+    forgotOtpController.dispose();
     forgotEmailController.dispose();
-    otpController.dispose();
     newPasswordController.dispose();
     confirmNewPasswordController.dispose();
     super.onClose();
+  }
+
+  String get resendLabel {
+    final s = resendSeconds.value;
+    final mm = (s ~/ 60).toString().padLeft(2, '0');
+    final ss = (s % 60).toString().padLeft(2, '0');
+    return 'Kirim ulang dalam $mm:$ss';
+  }
+
+  void _startResendCooldown([int seconds = 60]) {
+    _resendTimer?.cancel();
+    resendSeconds.value = seconds;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendSeconds.value <= 1) {
+        resendSeconds.value = 0;
+        timer.cancel();
+      } else {
+        resendSeconds.value -= 1;
+      }
+    });
   }
 
   void toggleRememberMe() {
@@ -99,7 +134,6 @@ class AuthController extends GetxController {
 
     isRegisterLoading.value = true;
     try {
-      // The API does not return tokens on register, so log in right after.
       await AuthService.instance.register(
         name: name,
         email: email,
@@ -107,11 +141,10 @@ class AuthController extends GetxController {
         password: password,
         passwordConfirmation: confirm,
       );
-      await AuthService.instance.login(
-        identifier: email,
-        password: password,
-      );
-      await _loadSessionAndGoHome();
+      registerOtpEmail.value = email;
+      regOtpController.clear();
+      _startResendCooldown();
+      Get.toNamed(Routes.REGISTER_OTP, arguments: {'email': email});
     } on ApiException catch (e) {
       _showError(e.message);
     } catch (_) {
@@ -121,13 +154,161 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> sendOtp() async {
+    final identifier = forgotEmailController.text.trim();
+    if (identifier.isEmpty) {
+      _showError('Masukkan email atau nomor HP');
+      return;
+    }
+    isForgotLoading.value = true;
+    try {
+      await AuthService.instance.forgotPassword(identifier: identifier);
+      currentStep.value = 2;
+      forgotOtpController.clear();
+      _startResendCooldown();
+      _showInfo('Kode terkirim', 'Kode OTP telah dikirim ke email/HP Anda.');
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal mengirim OTP. Coba lagi.');
+    } finally {
+      isForgotLoading.value = false;
+    }
+  }
+
+  Future<void> verifyOtp() async {
+    final code = forgotOtpController.text.trim();
+    if (!_isValidOtp(code)) return;
+    isForgotLoading.value = true;
+    try {
+      await AuthService.instance.verifyOtp(
+        identifier: forgotEmailController.text.trim(),
+        code: code,
+      );
+      currentStep.value = 3;
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Verifikasi gagal. Coba lagi.');
+    } finally {
+      isForgotLoading.value = false;
+    }
+  }
+
+  Future<void> verifyRegistrationOtp() async {
+    final code = regOtpController.text.trim();
+    if (!_isValidOtp(code)) return;
+    if (registerOtpEmail.value.isEmpty) {
+      _showError('Email pendaftar tidak ditemukan. Silakan daftar ulang.');
+      return;
+    }
+    isRegisterOtpLoading.value = true;
+    try {
+      await AuthService.instance.verifyOtp(
+        identifier: registerOtpEmail.value,
+        code: code,
+      );
+      _showInfo('Sukses', 'OTP terverifikasi. Silakan masuk.');
+      await Future.delayed(const Duration(seconds: 2));
+      registerOtpEmail.value = '';
+      regOtpController.clear();
+      Get.offAllNamed(Routes.LOGIN);
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Verifikasi gagal. Coba lagi.');
+    } finally {
+      isRegisterOtpLoading.value = false;
+    }
+  }
+
+  Future<void> resendRegistrationOtp() async {
+    if (resendSeconds.value > 0) return;
+    if (registerOtpEmail.value.isEmpty) {
+      _showError('Email pendaftar tidak ditemukan. Silakan daftar ulang.');
+      return;
+    }
+    isRegisterOtpLoading.value = true;
+    try {
+      await AuthService.instance.resendOtp(identifier: registerOtpEmail.value);
+      regOtpController.clear();
+      _startResendCooldown();
+      _showInfo('Kode dikirim', 'Kode OTP baru telah dikirim ke email Anda.');
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal mengirim ulang OTP. Coba lagi.');
+    } finally {
+      isRegisterOtpLoading.value = false;
+    }
+  }
+
+  Future<void> resendForgotOtp() async {
+    if (resendSeconds.value > 0) return;
+    await sendOtp();
+  }
+
+  Future<void> resetPassword() async {
+    final password = newPasswordController.text;
+    final confirm = confirmNewPasswordController.text;
+    if (password.length < 8) {
+      _showError('Password minimal 8 karakter');
+      return;
+    }
+    if (password != confirm) {
+      _showError('Konfirmasi password tidak cocok');
+      return;
+    }
+    isForgotLoading.value = true;
+    try {
+      await AuthService.instance.resetPassword(
+        identifier: forgotEmailController.text.trim(),
+        // ✅ Pakai forgotOtpController
+        code: forgotOtpController.text.trim(),
+        password: password,
+        passwordConfirmation: confirm,
+      );
+      _showInfo('Sukses', 'Password berhasil diubah. Silakan masuk.');
+      // ✅ Tunggu snackbar muncul dulu, lalu delete controller dan navigasi
+      await Future.delayed(const Duration(seconds: 2));
+      _resetForgotState();
+      Get.offAllNamed(Routes.LOGIN);
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal mengubah password. Coba lagi.');
+    } finally {
+      isForgotLoading.value = false;
+    }
+  }
+
   Future<void> _loadSessionAndGoHome() async {
     try {
       await SessionService.to.loadProfile();
-    } catch (_) {
-      // Non-fatal: the home screen will retry loading the profile.
-    }
+    } catch (_) {}
     Get.offAllNamed(Routes.HOME);
+  }
+
+  bool _isValidOtp(String code) {
+    if (code.isEmpty) {
+      _showError('Masukkan kode OTP');
+      return false;
+    }
+    if (code.length != 6 || int.tryParse(code) == null) {
+      _showError('Kode OTP harus 6 digit angka');
+      return false;
+    }
+    return true;
+  }
+
+  void _resetForgotState() {
+    _resendTimer?.cancel();
+    resendSeconds.value = 0;
+    currentStep.value = 1;
+    forgotEmailController.clear();
+    forgotOtpController.clear();
+    newPasswordController.clear();
+    confirmNewPasswordController.clear();
   }
 
   void _showError(String message) {
@@ -150,77 +331,5 @@ class AuthController extends GetxController {
       colorText: Colors.white,
       icon: const Icon(Icons.check_circle, color: Colors.white),
     );
-  }
-
-  Future<void> sendOtp() async {
-    final identifier = forgotEmailController.text.trim();
-    if (identifier.isEmpty) {
-      _showError('Masukkan email atau nomor HP');
-      return;
-    }
-    isForgotLoading.value = true;
-    try {
-      await AuthService.instance.forgotPassword(identifier: identifier);
-      currentStep.value = 2;
-      _showInfo('Kode terkirim', 'Kode OTP telah dikirim ke email/HP Anda.');
-    } on ApiException catch (e) {
-      _showError(e.message);
-    } catch (_) {
-      _showError('Gagal mengirim OTP. Coba lagi.');
-    } finally {
-      isForgotLoading.value = false;
-    }
-  }
-
-  Future<void> verifyOtp() async {
-    final code = otpController.text.trim();
-    if (code.isEmpty) {
-      _showError('Masukkan kode OTP');
-      return;
-    }
-    isForgotLoading.value = true;
-    try {
-      await AuthService.instance.verifyOtp(
-        identifier: forgotEmailController.text.trim(),
-        code: code,
-      );
-      currentStep.value = 3;
-    } on ApiException catch (e) {
-      _showError(e.message);
-    } catch (_) {
-      _showError('Verifikasi gagal. Coba lagi.');
-    } finally {
-      isForgotLoading.value = false;
-    }
-  }
-
-  Future<void> resetPassword() async {
-    final password = newPasswordController.text;
-    final confirm = confirmNewPasswordController.text;
-    if (password.length < 8) {
-      _showError('Password minimal 8 karakter');
-      return;
-    }
-    if (password != confirm) {
-      _showError('Konfirmasi password tidak cocok');
-      return;
-    }
-    isForgotLoading.value = true;
-    try {
-      await AuthService.instance.resetPassword(
-        identifier: forgotEmailController.text.trim(),
-        code: otpController.text.trim(),
-        password: password,
-        passwordConfirmation: confirm,
-      );
-      _showInfo('Sukses', 'Password berhasil diubah. Silakan masuk.');
-      Get.offAllNamed(Routes.LOGIN);
-    } on ApiException catch (e) {
-      _showError(e.message);
-    } catch (_) {
-      _showError('Gagal mengubah password. Coba lagi.');
-    } finally {
-      isForgotLoading.value = false;
-    }
   }
 }
