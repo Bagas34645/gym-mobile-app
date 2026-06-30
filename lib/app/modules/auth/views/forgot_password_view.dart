@@ -90,10 +90,24 @@ class ForgotPasswordView extends GetView<AuthController> {
           ),
           const SizedBox(height: 16),
           Center(
-            child: Text(
-              'Kirim ulang dalam 00:59',
-              style: AppTextStyles.bodySmall,
-            ),
+            child: Obx(() {
+              if (controller.resendSeconds.value > 0) {
+                return Text(
+                  controller.resendLabel,
+                  style: AppTextStyles.bodySmall,
+                );
+              }
+              return GestureDetector(
+                onTap: controller.resendForgotOtp,
+                child: Text(
+                  'Kirim ulang kode',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            }),
           ),
           const SizedBox(height: 32),
           Obx(
