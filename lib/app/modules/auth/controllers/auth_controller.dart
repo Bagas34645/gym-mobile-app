@@ -290,7 +290,7 @@ class AuthController extends GetxController {
   //   final body = await _api.post(
   //     '/auth/login/google',
   //     data: {'id_token': idToken},
-  //     skipAuth: true,
+  //     skipAuth: true,f
   //   );
   //   final data = body['data'] as Map<String, dynamic>;
   //   await TokenStorage.instance.saveTokens(
