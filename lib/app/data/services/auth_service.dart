@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import 'api_client.dart';
+import 'google_auth_service.dart';
 import 'token_storage.dart';
 
 class AuthService {
@@ -173,6 +174,11 @@ class AuthService {
     } catch (_) {
       // best-effort; clear locally regardless
     }
+    // Bersihkan juga sesi Google/Firebase agar login berikutnya menampilkan
+    // dialog pemilihan akun (best-effort).
+    try {
+      await GoogleAuthService.instance.signOut();
+    } catch (_) {}
     await TokenStorage.instance.clear();
   }
 }

@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gym_mobile_flutter/app/data/services/google_auth_service.dart';
-// import 'package:gym_mobile_flutter/app/data/services/token_storage.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/google_auth_service.dart';
 import '../../../data/services/session_service.dart';
 import '../../../routes/app_routes.dart';
 
@@ -285,17 +284,18 @@ class AuthController extends GetxController {
     }
   }
 
-  // Tambah method
   Future<void> loginWithGoogle() async {
     isGoogleLoading.value = true;
     try {
       final idToken = await GoogleAuthService.instance.signInAndGetIdToken();
       if (idToken == null) {
-        _showError('Login Google dibatalkan.');
+        // idToken null berarti user membatalkan dialog pilih akun.
         return;
       }
       await AuthService.instance.googleLogin(idToken: idToken);
       await _loadSessionAndGoHome();
+    } on GoogleSignInException catch (e) {
+      _showError(e.message);
     } on ApiException catch (e) {
       _showError(e.message);
     } catch (_) {
@@ -304,19 +304,6 @@ class AuthController extends GetxController {
       isGoogleLoading.value = false;
     }
   }
-
-  // Future<void> googleLogin({required String idToken}) async {
-  //   final body = await _api.post(
-  //     '/auth/login/google',
-  //     data: {'id_token': idToken},
-  //     skipAuth: true,f
-  //   );
-  //   final data = body['data'] as Map<String, dynamic>;
-  //   await TokenStorage.instance.saveTokens(
-  //     accessToken: data['access_token'] as String,
-  //     refreshToken: data['refresh_token'] as String,
-  //   );
-  // }
 
   Future<void> _loadSessionAndGoHome() async {
     try {

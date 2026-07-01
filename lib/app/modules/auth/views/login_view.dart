@@ -30,7 +30,7 @@ class LoginView extends GetView<AuthController> {
               ),
               const SizedBox(height: 16),
               Center(
-                child: Text('GYMFLOW', style: AppTextStyles.headingMedium),
+                child: Text('COREGYM', style: AppTextStyles.headingMedium),
               ),
               const SizedBox(height: 40),
               Text(
