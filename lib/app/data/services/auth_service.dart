@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import 'api_client.dart';
+import 'google_auth_service.dart';
 import 'token_storage.dart';
 
 class AuthService {
@@ -100,6 +101,19 @@ class AuthService {
     );
   }
 
+  Future<void> googleLogin({required String idToken}) async {
+    final body = await _api.post(
+      '/auth/login/google',
+      data: {'id_token': idToken},
+      skipAuth: true,
+    );
+    final data = body['data'] as Map<String, dynamic>;
+    await TokenStorage.instance.saveTokens(
+      accessToken: data['access_token'] as String,
+      refreshToken: data['refresh_token'] as String,
+    );
+  }
+
   Future<int> forgotPassword({
     required String identifier,
     String method = 'email',
@@ -160,6 +174,11 @@ class AuthService {
     } catch (_) {
       // best-effort; clear locally regardless
     }
+    // Bersihkan juga sesi Google/Firebase agar login berikutnya menampilkan
+    // dialog pemilihan akun (best-effort).
+    try {
+      await GoogleAuthService.instance.signOut();
+    } catch (_) {}
     await TokenStorage.instance.clear();
   }
 }

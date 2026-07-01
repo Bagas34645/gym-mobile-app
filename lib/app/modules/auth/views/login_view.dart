@@ -22,16 +22,28 @@ class LoginView extends GetView<AuthController> {
             children: [
               const SizedBox(height: 40),
               Center(
-                child: Icon(Icons.fitness_center, size: 60, color: AppColors.accent),
+                child: Icon(
+                  Icons.fitness_center,
+                  size: 60,
+                  color: AppColors.accent,
+                ),
               ),
               const SizedBox(height: 16),
               Center(
-                child: Text('GYMFLOW', style: AppTextStyles.headingMedium),
+                child: Text('COREGYM', style: AppTextStyles.headingMedium),
               ),
               const SizedBox(height: 40),
-              Text('Selamat Datang Kembali 👊', style: AppTextStyles.headingSmall),
+              Text(
+                'Selamat Datang Kembali 👊',
+                style: AppTextStyles.headingSmall,
+              ),
               const SizedBox(height: 8),
-              Text('Silakan masuk untuk melanjutkan', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+              Text(
+                'Silakan masuk untuk melanjutkan',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 32),
               GymTextField(
                 label: 'Email / Nomor HP',
@@ -51,33 +63,42 @@ class LoginView extends GetView<AuthController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Obx(() => Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: controller.rememberMe.value,
-                          onChanged: (_) => controller.toggleRememberMe(),
-                          activeColor: AppColors.accent,
+                  Obx(
+                    () => Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: controller.rememberMe.value,
+                            onChanged: (_) => controller.toggleRememberMe(),
+                            activeColor: AppColors.accent,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Ingat Saya', style: AppTextStyles.bodyMedium),
-                    ],
-                  )),
+                        const SizedBox(width: 8),
+                        Text('Ingat Saya', style: AppTextStyles.bodyMedium),
+                      ],
+                    ),
+                  ),
                   TextButton(
                     onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
-                    child: Text('Lupa Password?', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accent)),
+                    child: Text(
+                      'Lupa Password?',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.accent,
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              Obx(() => GymButton(
-                text: 'Masuk',
-                isLoading: controller.isLoginLoading.value,
-                onPressed: controller.login,
-              )),
+              Obx(
+                () => GymButton(
+                  text: 'Masuk',
+                  isLoading: controller.isLoginLoading.value,
+                  onPressed: controller.login,
+                ),
+              ),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -90,17 +111,40 @@ class LoginView extends GetView<AuthController> {
                 ],
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.g_mobiledata, size: 32, color: Colors.white),
-                  label: Text('Lanjutkan dengan Google', style: AppTextStyles.button.copyWith(color: Colors.white)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.divider),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              Obx(
+                () => SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    icon: controller.isGoogleLoading.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.g_mobiledata,
+                            size: 32,
+                            color: Colors.white,
+                          ),
+                    label: Text(
+                      'Lanjutkan dengan Google',
+                      style: AppTextStyles.button.copyWith(color: Colors.white),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.divider),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    // ✅ Hubungkan ke method
+                    onPressed: controller.isGoogleLoading.value
+                        ? null
+                        : controller.loginWithGoogle,
                   ),
-                  onPressed: () {},
                 ),
               ),
               const SizedBox(height: 40),
@@ -110,7 +154,13 @@ class LoginView extends GetView<AuthController> {
                   Text('Belum punya akun? ', style: AppTextStyles.bodyMedium),
                   GestureDetector(
                     onTap: () => Get.toNamed(Routes.REGISTER),
-                    child: Text('Daftar', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Daftar',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),

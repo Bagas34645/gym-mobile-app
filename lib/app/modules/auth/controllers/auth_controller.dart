@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/google_auth_service.dart';
 import '../../../data/services/session_service.dart';
 import '../../../routes/app_routes.dart';
 
@@ -13,6 +14,7 @@ class AuthController extends GetxController {
   final loginPasswordController = TextEditingController();
   var isLoginLoading = false.obs;
   var rememberMe = false.obs;
+  var isGoogleLoading = false.obs;
 
   // Register State
   final regNameController = TextEditingController();
@@ -279,6 +281,27 @@ class AuthController extends GetxController {
       _showError('Gagal mengubah password. Coba lagi.');
     } finally {
       isForgotLoading.value = false;
+    }
+  }
+
+  Future<void> loginWithGoogle() async {
+    isGoogleLoading.value = true;
+    try {
+      final idToken = await GoogleAuthService.instance.signInAndGetIdToken();
+      if (idToken == null) {
+        // idToken null berarti user membatalkan dialog pilih akun.
+        return;
+      }
+      await AuthService.instance.googleLogin(idToken: idToken);
+      await _loadSessionAndGoHome();
+    } on GoogleSignInException catch (e) {
+      _showError(e.message);
+    } on ApiException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Gagal login dengan Google. Coba lagi.');
+    } finally {
+      isGoogleLoading.value = false;
     }
   }
 

@@ -23,7 +23,7 @@ class SplashView extends GetView<SplashController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'GYMFLOW',
+              'COREGYM',
               style: AppTextStyles.headingLarge,
             ),
             const SizedBox(height: 8),
