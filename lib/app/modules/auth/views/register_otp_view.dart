@@ -13,10 +13,14 @@ class RegisterOtpView extends GetView<AuthController> {
     final argEmail = Get.arguments is Map
         ? (Get.arguments as Map)['email'] as String?
         : null;
-    if (argEmail != null && argEmail.isNotEmpty) {
-      controller.registerOtpEmail.value = argEmail;
+    // Sinkronkan email dari argument tanpa memutasi observable saat build.
+    if (argEmail != null &&
+        argEmail.isNotEmpty &&
+        controller.registerOtpEmail.value != argEmail) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.registerOtpEmail.value = argEmail;
+      });
     }
-    final email = argEmail ?? controller.registerOtpEmail.value;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -34,12 +38,15 @@ class RegisterOtpView extends GetView<AuthController> {
           children: [
             Text('Verifikasi Email', style: AppTextStyles.headingSmall),
             const SizedBox(height: 8),
-            Text(
-              'Kami telah mengirim kode OTP ke ${email.isEmpty ? 'email Anda' : email}.\nMasukkan kode tersebut untuk menyelesaikan pendaftaran.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+            Obx(() {
+              final email = controller.registerOtpEmail.value;
+              return Text(
+                'Kami telah mengirim kode OTP ke ${email.isEmpty ? 'email Anda' : email}.\nMasukkan kode tersebut untuk menyelesaikan pendaftaran.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              );
+            }),
             const SizedBox(height: 32),
             GymTextField(
               label: 'Kode OTP',
@@ -64,16 +71,26 @@ class RegisterOtpView extends GetView<AuthController> {
             ),
             const SizedBox(height: 24),
             Center(
-              child: GestureDetector(
-                onTap: controller.resendRegistrationOtp,
-                child: Text(
-                  'Kirim ulang kode',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.bold,
+              child: Obx(() {
+                if (controller.resendSeconds.value > 0) {
+                  return Text(
+                    controller.resendLabel,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }
+                return GestureDetector(
+                  onTap: controller.resendRegistrationOtp,
+                  child: Text(
+                    'Kirim ulang kode',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
