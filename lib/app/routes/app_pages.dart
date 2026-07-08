@@ -18,6 +18,7 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/membership/views/membership_status_view.dart';
 import '../modules/membership/views/packages_view.dart';
 import '../modules/membership/views/renewal_view.dart';
+import '../modules/membership/views/midtrans_payment_view.dart';
 import '../modules/membership/views/membership_history_view.dart';
 import '../modules/membership/bindings/membership_binding.dart';
 
@@ -83,6 +84,10 @@ class AppPages {
       name: Routes.RENEWAL,
       page: () => const RenewalView(),
       binding: MembershipBinding(),
+    ),
+    GetPage(
+      name: Routes.MIDTRANS_PAYMENT,
+      page: () => const MidtransPaymentView(),
     ),
     GetPage(
       name: Routes.MEMBERSHIP_HISTORY,

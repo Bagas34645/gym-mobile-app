@@ -21,8 +21,6 @@ class SplashController extends GetxController {
       return;
     }
 
-    // We have stored tokens — try to load the profile. If it fails (expired
-    // tokens, etc.) fall back to onboarding/login.
     try {
       final user = await session.loadProfile();
       if (user != null) {
@@ -30,8 +28,9 @@ class SplashController extends GetxController {
         return;
       }
     } catch (_) {
-      // ignore and route to onboarding below
+      // ignore
     }
-    Get.offAllNamed(Routes.ONBOARDING);
+    await session.clearSession();
+    Get.offAllNamed(Routes.LOGIN);
   }
 }

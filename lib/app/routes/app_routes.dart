@@ -9,6 +9,7 @@ abstract class Routes {
   static const MEMBERSHIP = '/membership';
   static const PACKAGES = '/packages';
   static const RENEWAL = '/renewal';
+  static const MIDTRANS_PAYMENT = '/midtrans-payment';
   static const CHECKIN = '/checkin';
   static const FACE_REGISTER = '/face-register';
   static const TRAINER = '/trainer';

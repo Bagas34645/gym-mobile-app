@@ -6,6 +6,16 @@ import 'api_client.dart';
 import 'google_auth_service.dart';
 import 'token_storage.dart';
 
+class AuthRegisterResult {
+  const AuthRegisterResult({
+    required this.member,
+    required this.expiresIn,
+  });
+
+  final Map<String, dynamic> member;
+  final int expiresIn;
+}
+
 class AuthService {
   AuthService._();
 
@@ -18,10 +28,15 @@ class AuthService {
   Future<Map<String, dynamic>> login({
     required String identifier,
     required String password,
+    String? deviceToken,
   }) async {
     final body = await _api.post(
       '/auth/login',
-      data: {'identifier': identifier, 'password': password},
+      data: {
+        'identifier': identifier,
+        'password': password,
+        if (deviceToken != null) 'device_token': deviceToken,
+      },
       skipAuth: true,
     );
 
@@ -34,8 +49,8 @@ class AuthService {
   }
 
   /// Registers a new member. The API does NOT return tokens here — the caller
-  /// must log in afterwards. Returns the created member payload.
-  Future<Map<String, dynamic>> register({
+  /// must log in afterwards.
+  Future<AuthRegisterResult> register({
     required String name,
     required String email,
     required String phone,
@@ -53,7 +68,11 @@ class AuthService {
       },
       skipAuth: true,
     );
-    return (body['data'] as Map<String, dynamic>?) ?? {};
+    final meta = body['meta'] as Map<String, dynamic>?;
+    return AuthRegisterResult(
+      member: (body['data'] as Map<String, dynamic>?) ?? {},
+      expiresIn: (meta?['expires_in'] as num?)?.toInt() ?? 300,
+    );
   }
 
   Future<Map<String, dynamic>> me() async {
@@ -101,10 +120,13 @@ class AuthService {
     );
   }
 
-  Future<void> googleLogin({required String idToken}) async {
+  Future<void> googleLogin({required String idToken, String? deviceToken}) async {
     final body = await _api.post(
       '/auth/login/google',
-      data: {'id_token': idToken},
+      data: {
+        'id_token': idToken,
+        if (deviceToken != null) 'device_token': deviceToken,
+      },
       skipAuth: true,
     );
     final data = body['data'] as Map<String, dynamic>;
@@ -174,8 +196,6 @@ class AuthService {
     } catch (_) {
       // best-effort; clear locally regardless
     }
-    // Bersihkan juga sesi Google/Firebase agar login berikutnya menampilkan
-    // dialog pemilihan akun (best-effort).
     try {
       await GoogleAuthService.instance.signOut();
     } catch (_) {}

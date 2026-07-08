@@ -30,22 +30,14 @@ class CheckinController extends GetxController {
   bool get isFacePending => faceStatus.value == 'pending';
   bool get isFaceRejected => faceStatus.value == 'rejected';
 
-  static const int totalCaptureSteps = 5;
+  static const int totalCaptureSteps = 1;
 
   final List<String> captureInstructions = const [
-    'Hadapkan wajah ke depan',
-    'Miringkan sedikit ke kiri',
-    'Miringkan sedikit ke kanan',
-    'Angkat sedikit ke atas',
-    'Tundukkan sedikit ke bawah',
+    'Hadapkan wajah ke depan kamera',
   ];
 
   final List<IconData> captureIcons = const [
     Icons.face,
-    Icons.turn_left,
-    Icons.turn_right,
-    Icons.keyboard_arrow_up,
-    Icons.keyboard_arrow_down,
   ];
 
   // ── Filter ───────────────────────────────────────────────────

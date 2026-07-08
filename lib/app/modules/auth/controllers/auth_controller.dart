@@ -6,6 +6,7 @@ import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/google_auth_service.dart';
 import '../../../data/services/session_service.dart';
+import '../../../data/services/token_storage.dart';
 import '../../../routes/app_routes.dart';
 
 class AuthController extends GetxController {
@@ -40,6 +41,20 @@ class AuthController extends GetxController {
   // Cooldown kirim ulang OTP (dipakai register & forgot password).
   var resendSeconds = 0.obs;
   Timer? _resendTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadRememberedIdentifier();
+  }
+
+  Future<void> _loadRememberedIdentifier() async {
+    final saved = await TokenStorage.instance.rememberedIdentifier;
+    if (saved != null && saved.isNotEmpty) {
+      loginEmailController.text = saved;
+      rememberMe.value = true;
+    }
+  }
 
   @override
   void onClose() {
@@ -100,6 +115,11 @@ class AuthController extends GetxController {
         identifier: identifier,
         password: password,
       );
+      if (rememberMe.value) {
+        await TokenStorage.instance.saveRememberedIdentifier(identifier);
+      } else {
+        await TokenStorage.instance.clearRememberedIdentifier();
+      }
       await _loadSessionAndGoHome();
     } on ApiException catch (e) {
       _showError(e.message);
@@ -136,7 +156,7 @@ class AuthController extends GetxController {
 
     isRegisterLoading.value = true;
     try {
-      await AuthService.instance.register(
+      final result = await AuthService.instance.register(
         name: name,
         email: email,
         phone: phone,
@@ -145,7 +165,7 @@ class AuthController extends GetxController {
       );
       registerOtpEmail.value = email;
       regOtpController.clear();
-      _startResendCooldown();
+      _startResendCooldown(result.expiresIn);
       Get.toNamed(Routes.REGISTER_OTP, arguments: {'email': email});
     } on ApiException catch (e) {
       _showError(e.message);

@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:dio/dio.dart';
-
 import '../models/membership_model.dart';
 import 'api_client.dart';
 
@@ -40,26 +36,17 @@ class MembershipService {
         .toList();
   }
 
-  /// Requests a renewal. [paymentMethod] is one of `transfer|cash|qris`.
-  /// A [paymentProof] image is required when paying via `transfer`.
+  /// Requests a cash renewal at the gym (pending admin verification).
   Future<Map<String, dynamic>> renew({
     required String packageId,
     required String paymentMethod,
-    File? paymentProof,
   }) async {
-    final form = <String, dynamic>{
-      'package_id': packageId,
-      'payment_method': paymentMethod,
-    };
-    if (paymentProof != null) {
-      form['payment_proof'] = await MultipartFile.fromFile(
-        paymentProof.path,
-        filename: 'payment_proof.jpg',
-      );
-    }
-    final body = await _api.postMultipart(
+    final body = await _api.post(
       '/memberships/renew',
-      FormData.fromMap(form),
+      data: {
+        'package_id': packageId,
+        'payment_method': paymentMethod,
+      },
     );
     return (body['data'] as Map<String, dynamic>?) ?? {};
   }

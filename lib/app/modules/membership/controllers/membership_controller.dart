@@ -1,16 +1,14 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../data/models/membership_model.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/membership_service.dart';
+import '../../../data/services/payment_service.dart';
 import '../../../routes/app_routes.dart';
 
 class MembershipController extends GetxController {
   final MembershipService _service = MembershipService.instance;
-  final ImagePicker _picker = ImagePicker();
+  final PaymentService _paymentService = PaymentService.instance;
 
   final RxBool isLoading = false.obs;
   final Rxn<ActiveMembership> active = Rxn<ActiveMembership>();
@@ -23,8 +21,9 @@ class MembershipController extends GetxController {
 
   // Renewal/checkout state
   final RxInt renewalStep = 1.obs; // 1: confirm, 2: payment, 3: success
-  final RxString selectedPaymentMethod = ''.obs; // transfer | cash | qris
-  final Rxn<File> paymentProof = Rxn<File>();
+  final RxString selectedPaymentMethod = ''.obs; // midtrans | cash
+  final RxString paymentResultType =
+      'cash_pending'.obs; // cash_pending | midtrans_success | midtrans_failed
   final RxBool isProcessing = false.obs;
   MembershipPackage? selectedPackageForRenewal;
 
@@ -118,7 +117,7 @@ class MembershipController extends GetxController {
     selectedPackageForRenewal = pkg;
     renewalStep.value = 1;
     selectedPaymentMethod.value = '';
-    paymentProof.value = null;
+    paymentResultType.value = 'cash_pending';
     Get.toNamed(Routes.RENEWAL);
   }
 
@@ -130,24 +129,9 @@ class MembershipController extends GetxController {
         _showError('Pilih metode pembayaran terlebih dahulu');
         return;
       }
-      if (selectedPaymentMethod.value == 'transfer' &&
-          paymentProof.value == null) {
-        _showError('Unggah bukti transfer terlebih dahulu');
-        return;
-      }
       processPayment();
     } else {
       Get.offAllNamed(Routes.HOME);
-    }
-  }
-
-  Future<void> pickPaymentProof() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (image != null) {
-      paymentProof.value = File(image.path);
     }
   }
 
@@ -160,14 +144,19 @@ class MembershipController extends GetxController {
       const Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
     );
+
     try {
-      await _service.renew(
-        packageId: pkg.id,
-        paymentMethod: selectedPaymentMethod.value,
-        paymentProof: paymentProof.value,
-      );
+      if (selectedPaymentMethod.value == 'midtrans') {
+        await _processMidtransPayment(pkg);
+      } else {
+        await _service.renew(
+          packageId: pkg.id,
+          paymentMethod: 'cash',
+        );
+        paymentResultType.value = 'cash_pending';
+        renewalStep.value = 3;
+      }
       if (Get.isDialogOpen ?? false) Get.back();
-      renewalStep.value = 3;
       await loadAll();
     } on ApiException catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
@@ -178,6 +167,44 @@ class MembershipController extends GetxController {
     } finally {
       isProcessing.value = false;
     }
+  }
+
+  Future<void> _processMidtransPayment(MembershipPackage pkg) async {
+    final snap = await _paymentService.createSnapPayment(pkg.id);
+
+    if (Get.isDialogOpen ?? false) Get.back();
+
+    final completed = await Get.toNamed(
+      Routes.MIDTRANS_PAYMENT,
+      arguments: {
+        'redirect_url': snap.redirectUrl,
+        'order_id': snap.orderId,
+      },
+    );
+
+    if (completed != true) {
+      paymentResultType.value = 'midtrans_failed';
+      renewalStep.value = 3;
+      return;
+    }
+
+    final paid = await _pollPaymentStatus(snap.orderId);
+    paymentResultType.value = paid ? 'midtrans_success' : 'midtrans_failed';
+    renewalStep.value = 3;
+  }
+
+  Future<bool> _pollPaymentStatus(String orderId) async {
+    for (var attempt = 0; attempt < 15; attempt++) {
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final status = await _paymentService.getPaymentStatus(orderId);
+        if (status.isPaid) return true;
+        if (status.renewalStatus == 'rejected') return false;
+      } on ApiException {
+        // keep polling
+      }
+    }
+    return false;
   }
 
   void _showError(String message) {

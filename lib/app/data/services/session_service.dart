@@ -48,5 +48,8 @@ class SessionService extends GetxService {
     return user.value;
   }
 
-  void clear() => user.value = null;
+  Future<void> clearSession() async {
+    await TokenStorage.instance.clear();
+    user.value = null;
+  }
 }
