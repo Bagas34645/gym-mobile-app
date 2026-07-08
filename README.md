@@ -1,17 +1,40 @@
-# gym_mobile_flutter
+# CoreGym Mobile (Flutter)
 
-A new Flutter project.
+Member mobile app for the CoreGym gym management system.
 
-## Getting Started
+## Requirements
 
-This project is a starting point for a Flutter application.
+- Flutter SDK 3.11+
+- Running `gym-management-api` backend
 
-A few resources to get you started if this is your first Flutter project:
+## Configuration
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Set the API base URL at build/run time:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+# Android emulator (default)
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/v1
+
+# Physical device on same LAN
+flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8000/v1
+
+# Production
+flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
+```
+
+## Firebase / Google Sign-In
+
+- Android: `android/app/google-services.json` (from Firebase console)
+- iOS: add `GoogleService-Info.plist` via `flutterfire configure`
+
+## Release signing (Android)
+
+```bash
+cp android/key.properties.example android/key.properties
+# Edit key.properties and create your keystore
+flutter build apk --release --dart-define=API_BASE_URL=https://api.example.com/v1
+```
+
+## Full setup guide
+
+See [`../panduan/PANDUAN_MENJALANKAN.md`](../panduan/PANDUAN_MENJALANKAN.md)

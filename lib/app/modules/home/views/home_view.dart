@@ -284,77 +284,120 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildTodayWorkout() {
-    return GestureDetector(
-      onTap: () => Get.toNamed(Routes.WORKOUT_PLAN),
-      child: GymCard(
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+    return Obx(() {
+      final plan = controller.todayWorkout.value;
+      if (plan == null) {
+        return GymCard(
+          child: Text(
+            'Belum ada program latihan aktif',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          ),
+        );
+      }
+
+      return GestureDetector(
+        onTap: () => Get.toNamed(Routes.WORKOUT_PLAN),
+        child: GymCard(
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.fitness_center, color: AppColors.accent),
               ),
-              child: const Icon(Icons.fitness_center, color: AppColors.accent),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Upper Body Strength', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('6 Latihan • 45 Menit', style: AppTextStyles.bodySmall),
-                ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      plan.name,
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${plan.exercises.length} Latihan',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-          ],
+              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildRecentActivity() {
-    return SizedBox(
-      height: 80,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        separatorBuilder: (context, index) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          return Container(
-            width: 240,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface2,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+    return Obx(() {
+      final items = controller.recentAttendance;
+      if (items.isEmpty) {
+        return GymCard(
+          child: Text(
+            'Belum ada aktivitas check-in',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          ),
+        );
+      }
+
+      return SizedBox(
+        height: 80,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: items.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Container(
+              width: 240,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface2,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.door_front_door_outlined, color: AppColors.accent, size: 20),
                   ),
-                  child: const Icon(Icons.door_front_door_outlined, color: AppColors.accent, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Check-in Gym', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
-                    Text('Hari ini, 07:30 AM', style: AppTextStyles.bodySmall),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Check-in Gym',
+                          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${formatDateShort(item.checkInTime)}, ${formatTime(item.checkInTime)}',
+                          style: AppTextStyles.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 }

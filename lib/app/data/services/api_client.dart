@@ -93,12 +93,12 @@ class ApiClient {
     return false;
   }
 
-  Future<Response<dynamic>> _retry(RequestOptions requestOptions) {
-    final token = requestOptions.headers['Authorization'];
+  Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+    final freshToken = await TokenStorage.instance.accessToken;
     return _dio.fetch(
       requestOptions
         ..extra['retried'] = true
-        ..headers['Authorization'] = token,
+        ..headers['Authorization'] = freshToken != null ? 'Bearer $freshToken' : null,
     );
   }
 
@@ -137,6 +137,10 @@ class ApiClient {
     Object? data,
   }) async {
     return _unwrap(() => _dio.put(path, data: data));
+  }
+
+  Future<Map<String, dynamic>> delete(String path) async {
+    return _unwrap(() => _dio.delete(path));
   }
 
   Future<Map<String, dynamic>> postMultipart(

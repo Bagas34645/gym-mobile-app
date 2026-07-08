@@ -28,7 +28,9 @@ class RenewalView extends GetView<MembershipController> {
         return Padding(
           padding: const EdgeInsets.all(24.0),
           child: GymButton(
-            text: controller.renewalStep.value == 1 ? 'Lanjutkan Pembayaran' : 'Bayar Sekarang',
+            text: controller.renewalStep.value == 1
+                ? 'Lanjutkan Pembayaran'
+                : 'Bayar Sekarang',
             onPressed: controller.nextRenewalStep,
           ),
         );
@@ -38,7 +40,9 @@ class RenewalView extends GetView<MembershipController> {
 
   Widget _buildStep1() {
     final pkg = controller.selectedPackageForRenewal;
-    if (pkg == null) return const Center(child: Text('Tidak ada paket terpilih'));
+    if (pkg == null) {
+      return const Center(child: Text('Tidak ada paket terpilih'));
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -57,20 +61,30 @@ class RenewalView extends GetView<MembershipController> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(formatRupiah(pkg.price), style: AppTextStyles.headingMedium.copyWith(color: AppColors.accent)),
+                    Text(
+                      formatRupiah(pkg.price),
+                      style: AppTextStyles.headingMedium
+                          .copyWith(color: AppColors.accent),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6.0, left: 4.0),
-                      child: Text(controller.periodLabel(pkg), style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      child: Text(
+                        controller.periodLabel(pkg),
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('Durasi ${pkg.durationDays} hari',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textSecondary)),
+                Text(
+                  'Durasi ${pkg.durationDays} hari',
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textSecondary),
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -94,68 +108,30 @@ class RenewalView extends GetView<MembershipController> {
                 const SizedBox(height: 12),
                 const Divider(),
                 const SizedBox(height: 12),
-                _buildSummaryRow('Total Pembayaran', formatRupiah(pkg.price),
-                    isTotal: true),
+                _buildSummaryRow(
+                  'Total Pembayaran',
+                  formatRupiah(pkg.price),
+                  isTotal: true,
+                ),
               ],
             ),
           ),
           const SizedBox(height: 32),
           Text('Metode Pembayaran', style: AppTextStyles.headingSmall),
           const SizedBox(height: 16),
-          _buildPaymentMethodOption('Transfer Bank', Icons.account_balance, 'transfer'),
+          _buildPaymentMethodOption(
+            'Bayar Online (Midtrans)',
+            Icons.payment,
+            'midtrans',
+          ),
           const SizedBox(height: 12),
-          _buildPaymentMethodOption('QRIS', Icons.qr_code, 'qris'),
-          const SizedBox(height: 12),
-          _buildPaymentMethodOption('Tunai (di Gym)', Icons.payments, 'cash'),
-          const SizedBox(height: 24),
-          Obx(() {
-            if (controller.selectedPaymentMethod.value != 'transfer') {
-              return const SizedBox.shrink();
-            }
-            return _buildProofPicker();
-          }),
+          _buildPaymentMethodOption(
+            'Tunai (di Gym)',
+            Icons.payments,
+            'cash',
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildProofPicker() {
-    final proof = controller.paymentProof.value;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Bukti Transfer', style: AppTextStyles.headingSmall),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: controller.pickPaymentProof,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Row(
-              children: [
-                Icon(proof == null ? Icons.upload_file : Icons.check_circle,
-                    color: proof == null
-                        ? AppColors.textSecondary
-                        : AppColors.success),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    proof == null
-                        ? 'Unggah bukti transfer'
-                        : 'Bukti terpilih',
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -163,7 +139,11 @@ class RenewalView extends GetView<MembershipController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium
+              .copyWith(color: AppColors.textSecondary),
+        ),
         Text(
           value,
           style: AppTextStyles.bodyLarge.copyWith(
@@ -185,7 +165,9 @@ class RenewalView extends GetView<MembershipController> {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isSelected ? AppColors.accent : AppColors.divider),
+            border: Border.all(
+              color: isSelected ? AppColors.accent : AppColors.divider,
+            ),
           ),
           child: Row(
             children: [
@@ -202,21 +184,61 @@ class RenewalView extends GetView<MembershipController> {
   }
 
   Widget _buildStep3() {
+    return Obx(() {
+      final resultType = controller.paymentResultType.value;
+
+      if (resultType == 'midtrans_success') {
+        return _buildResult(
+          icon: Icons.check_circle,
+          iconColor: AppColors.success,
+          title: 'Pembayaran Berhasil!',
+          message:
+              'Membership Anda telah aktif. Terima kasih telah melakukan pembayaran.',
+        );
+      }
+
+      if (resultType == 'midtrans_failed') {
+        return _buildResult(
+          icon: Icons.error_outline,
+          iconColor: AppColors.error,
+          title: 'Pembayaran Belum Selesai',
+          message:
+              'Pembayaran belum dikonfirmasi. Silakan coba lagi atau hubungi admin jika sudah membayar.',
+        );
+      }
+
+      return _buildResult(
+        icon: Icons.check_circle,
+        iconColor: AppColors.success,
+        title: 'Permintaan Terkirim!',
+        message:
+            'Perpanjangan membership Anda sedang menunggu verifikasi admin. '
+            'Anda akan diberi tahu setelah disetujui.',
+      );
+    });
+  }
+
+  Widget _buildResult({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String message,
+  }) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 100),
+            Icon(icon, color: iconColor, size: 100),
             const SizedBox(height: 32),
-            Text('Permintaan Terkirim!', style: AppTextStyles.headingSmall),
+            Text(title, style: AppTextStyles.headingSmall),
             const SizedBox(height: 16),
             Text(
-              'Perpanjangan membership Anda sedang menunggu verifikasi admin. '
-              'Anda akan diberi tahu setelah disetujui.',
+              message,
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 48),
             GymButton(

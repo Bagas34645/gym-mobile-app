@@ -8,6 +8,7 @@ class TokenStorage {
 
   static const _accessKey = 'access_token';
   static const _refreshKey = 'refresh_token';
+  static const _rememberedIdentifierKey = 'remembered_identifier';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -26,6 +27,17 @@ class TokenStorage {
   Future<String?> get refreshToken => _storage.read(key: _refreshKey);
 
   Future<bool> get hasSession async => (await accessToken) != null;
+
+  Future<void> saveRememberedIdentifier(String identifier) async {
+    await _storage.write(key: _rememberedIdentifierKey, value: identifier);
+  }
+
+  Future<String?> get rememberedIdentifier =>
+      _storage.read(key: _rememberedIdentifierKey);
+
+  Future<void> clearRememberedIdentifier() async {
+    await _storage.delete(key: _rememberedIdentifierKey);
+  }
 
   Future<void> clear() async {
     await _storage.delete(key: _accessKey);

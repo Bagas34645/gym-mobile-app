@@ -1,0 +1,5 @@
+# Copy to key.properties and fill in before release builds.
+# storeFile=../release-keystore.jks
+# storePassword=
+# keyAlias=
+# keyPassword=
