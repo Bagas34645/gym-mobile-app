@@ -20,4 +20,6 @@ abstract class Routes {
   static const SUPPORT = '/support';
   static const PROFILE = '/profile';
   static const MEMBERSHIP_HISTORY = '/membership-history';
+  static const CHAT = '/chat';
+  static const CHAT_DETAIL = '/chat-detail';
 }
