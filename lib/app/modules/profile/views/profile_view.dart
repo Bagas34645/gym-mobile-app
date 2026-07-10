@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gym_mobile_flutter/app/routes/app_routes.dart';
 import '../controllers/profile_controller.dart';
 import '../../../data/models/user_model.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -43,13 +44,15 @@ class ProfileView extends GetView<ProfileController> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.surface2,
-                      backgroundImage:
-                          (photo != null && photo.isNotEmpty)
-                              ? NetworkImage(photo)
-                              : null,
+                      backgroundImage: (photo != null && photo.isNotEmpty)
+                          ? NetworkImage(photo)
+                          : null,
                       child: (photo == null || photo.isEmpty)
-                          ? const Icon(Icons.person,
-                              color: AppColors.textPrimary, size: 50)
+                          ? const Icon(
+                              Icons.person,
+                              color: AppColors.textPrimary,
+                              size: 50,
+                            )
                           : null,
                     ),
                     const SizedBox(height: 16),
@@ -57,14 +60,16 @@ class ProfileView extends GetView<ProfileController> {
                     const SizedBox(height: 4),
                     Text(
                       u?.email ?? '-',
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       u?.phone ?? '-',
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 );
@@ -73,15 +78,29 @@ class ProfileView extends GetView<ProfileController> {
               Obx(() => _buildStatsRow(controller.user.value)),
               const SizedBox(height: 32),
               _buildMenuSection('Akun', [
-                _buildMenuItem(Icons.person_outline, 'Edit Profil',
-                    () => _openEditProfile(context)),
-                _buildMenuItem(Icons.lock_outline, 'Ubah Password',
-                    () => _openChangePassword(context)),
+                _buildMenuItem(
+                  Icons.person_outline,
+                  'Edit Profil',
+                  () => _openEditProfile(context),
+                ),
+                _buildMenuItem(
+                  Icons.lock_outline,
+                  'Ubah Password',
+                  () => _openChangePassword(context),
+                ),
+                _buildMenuItem(
+                  Icons.chat_bubble_outline,
+                  'Pesan / Chat',
+                  () => Get.toNamed(Routes.CHAT),
+                ),
               ]),
               const SizedBox(height: 24),
               _buildMenuSection('Lainnya', [
-                _buildMenuItem(Icons.privacy_tip_outlined, 'Kebijakan Privasi',
-                    () {}),
+                _buildMenuItem(
+                  Icons.privacy_tip_outlined,
+                  'Kebijakan Privasi',
+                  () {},
+                ),
                 _buildMenuItem(Icons.info_outline, 'Tentang Aplikasi', () {}),
               ]),
               const SizedBox(height: 32),
@@ -112,8 +131,7 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildStatsRow(UserModel? user) {
-    String fmt(num? v, String suffix) =>
-        v == null ? '-' : '$v$suffix';
+    String fmt(num? v, String suffix) => v == null ? '-' : '$v$suffix';
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -139,12 +157,17 @@ class ProfileView extends GetView<ProfileController> {
   Widget _stat(String label, String value) {
     return Column(
       children: [
-        Text(value,
-            style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 4),
-        Text(label,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -197,38 +220,45 @@ class ProfileView extends GetView<ProfileController> {
                 Text('Edit Profil', style: AppTextStyles.headingSmall),
                 const SizedBox(height: 24),
                 GymTextField(
-                    label: 'Nama',
-                    hint: 'Nama lengkap',
-                    controller: controller.nameController),
+                  label: 'Nama',
+                  hint: 'Nama lengkap',
+                  controller: controller.nameController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Usia',
-                    hint: 'Tahun',
-                    keyboardType: TextInputType.number,
-                    controller: controller.ageController),
+                  label: 'Usia',
+                  hint: 'Tahun',
+                  keyboardType: TextInputType.number,
+                  controller: controller.ageController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Tinggi (cm)',
-                    hint: 'cm',
-                    keyboardType: TextInputType.number,
-                    controller: controller.heightController),
+                  label: 'Tinggi (cm)',
+                  hint: 'cm',
+                  keyboardType: TextInputType.number,
+                  controller: controller.heightController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Berat (kg)',
-                    hint: 'kg',
-                    keyboardType: TextInputType.number,
-                    controller: controller.weightController),
+                  label: 'Berat (kg)',
+                  hint: 'kg',
+                  keyboardType: TextInputType.number,
+                  controller: controller.weightController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Target Fitness',
-                    hint: 'cth: Menurunkan berat badan',
-                    controller: controller.goalController),
+                  label: 'Target Fitness',
+                  hint: 'cth: Menurunkan berat badan',
+                  controller: controller.goalController,
+                ),
                 const SizedBox(height: 24),
-                Obx(() => GymButton(
-                      text: 'Simpan',
-                      isLoading: controller.isSaving.value,
-                      onPressed: controller.saveProfile,
-                    )),
+                Obx(
+                  () => GymButton(
+                    text: 'Simpan',
+                    isLoading: controller.isSaving.value,
+                    onPressed: controller.saveProfile,
+                  ),
+                ),
                 const SizedBox(height: 12),
               ],
             ),
@@ -259,28 +289,33 @@ class ProfileView extends GetView<ProfileController> {
                 Text('Ubah Password', style: AppTextStyles.headingSmall),
                 const SizedBox(height: 24),
                 GymTextField(
-                    label: 'Password Saat Ini',
-                    hint: 'Masukkan password lama',
-                    isPassword: true,
-                    controller: controller.currentPasswordController),
+                  label: 'Password Saat Ini',
+                  hint: 'Masukkan password lama',
+                  isPassword: true,
+                  controller: controller.currentPasswordController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Password Baru',
-                    hint: 'Minimal 8 karakter',
-                    isPassword: true,
-                    controller: controller.newPasswordController),
+                  label: 'Password Baru',
+                  hint: 'Minimal 8 karakter',
+                  isPassword: true,
+                  controller: controller.newPasswordController,
+                ),
                 const SizedBox(height: 16),
                 GymTextField(
-                    label: 'Konfirmasi Password',
-                    hint: 'Ulangi password baru',
-                    isPassword: true,
-                    controller: controller.confirmPasswordController),
+                  label: 'Konfirmasi Password',
+                  hint: 'Ulangi password baru',
+                  isPassword: true,
+                  controller: controller.confirmPasswordController,
+                ),
                 const SizedBox(height: 24),
-                Obx(() => GymButton(
-                      text: 'Simpan',
-                      isLoading: controller.isSaving.value,
-                      onPressed: controller.savePassword,
-                    )),
+                Obx(
+                  () => GymButton(
+                    text: 'Simpan',
+                    isLoading: controller.isSaving.value,
+                    onPressed: controller.savePassword,
+                  ),
+                ),
                 const SizedBox(height: 12),
               ],
             ),

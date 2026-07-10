@@ -33,7 +33,13 @@ import '../modules/checkin/views/checkin_view.dart';
 import '../modules/checkin/views/face_register_view.dart';
 import '../modules/checkin/bindings/checkin_binding.dart';
 
+import '../modules/chat/views/chat_view.dart';
+import '../modules/chat/views/chat_detail_view.dart';
+import '../modules/chat/bindings/chat_binding.dart';
+
 class AppPages {
+  static const INITIAL = Routes.SPLASH;
+
   static final routes = [
     GetPage(
       name: Routes.SPLASH,
@@ -123,6 +129,16 @@ class AppPages {
       name: Routes.WORKOUT_TRACKING,
       page: () => const WorkoutTrackingView(),
       binding: WorkoutBinding(),
+    ),
+    GetPage(
+      name: Routes.CHAT,
+      page: () => const ChatListView(),
+      binding: ChatBinding(),
+    ),
+    GetPage(
+      name: Routes.CHAT_DETAIL,
+      page: () => ChatDetailView(),
+      binding: ChatBinding(),
     ),
   ];
 }

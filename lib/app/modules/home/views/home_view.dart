@@ -257,7 +257,7 @@ class HomeView extends GetView<HomeController> {
         _buildActionItem(Icons.qr_code_scanner, 'Check-in', () => Get.toNamed(Routes.CHECKIN)),
         _buildActionItem(Icons.people_outline, 'Trainer', controller.openTrainerList),
         _buildActionItem(Icons.auto_graph, 'Progress', () {}),
-        _buildActionItem(Icons.chat_bubble_outline, 'Chat', () {}),
+        _buildActionItem(Icons.chat_bubble_outline, 'Chat', () => Get.toNamed(Routes.CHAT)),
       ],
     );
   }
