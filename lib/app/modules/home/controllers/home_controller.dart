@@ -4,6 +4,7 @@ import '../../../data/models/membership_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/workout_model.dart';
 import '../../../data/services/attendance_service.dart';
+import '../../../data/services/chat_inbox_service.dart';
 import '../../../data/services/membership_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/services/session_service.dart';
@@ -48,12 +49,30 @@ class HomeController extends GetxController {
       final plans = results[1] as List<WorkoutPlanModel>;
       todayWorkout.value = plans.isNotEmpty ? plans.first : null;
       recentAttendance.value = results[2] as List<AttendanceModel>;
-      hasNotification.value = results[3] as bool;
+      final serverUnread = results[3] as bool;
+      final chatUnread = Get.isRegistered<ChatInboxService>()
+          ? ChatInboxService.to.hasUnreadChat.value
+          : false;
+      hasNotification.value = serverUnread || chatUnread;
     } catch (_) {
       // Keep whatever we have; dashboard degrades gracefully.
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> refreshNotificationBadge() async {
+    try {
+      final serverUnread = await NotificationService.instance.hasUnread();
+      final chatUnread = Get.isRegistered<ChatInboxService>()
+          ? ChatInboxService.to.hasUnreadChat.value
+          : false;
+      hasNotification.value = serverUnread || chatUnread;
+    } catch (_) {}
+  }
+
+  Future<void> openNotifications() async {
+    Get.toNamed(Routes.NOTIFICATION);
   }
 
   int get remainingDays => membership.value?.remainingDays ?? 0;

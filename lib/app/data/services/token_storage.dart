@@ -10,8 +10,10 @@ class TokenStorage {
   static const _refreshKey = 'refresh_token';
   static const _rememberedIdentifierKey = 'remembered_identifier';
 
+  // Avoid encryptedSharedPreferences — it can hang indefinitely on some
+  // Android devices / after keystore resets, leaving the splash stuck forever.
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(),
   );
 
   Future<void> saveTokens({

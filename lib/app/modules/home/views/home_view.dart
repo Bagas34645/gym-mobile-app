@@ -8,6 +8,7 @@ import '../../../../core/widgets/bottom_nav_bar.dart';
 import '../../../../core/widgets/gym_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../routes/app_routes.dart';
+import '../../chat/controllers/chat_controller.dart';
 import '../../trainer/views/workout_plan_view.dart';
 import '../../trainer/views/trainer_list_view.dart';
 import '../../profile/views/profile_view.dart';
@@ -76,37 +77,44 @@ class HomeView extends GetView<HomeController> {
 
   Widget _buildHeader() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: AppColors.surface2,
-              child: Icon(Icons.person, color: AppColors.textPrimary),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(() => Text(
-                      'Halo, ${controller.userName} 💪',
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(fontWeight: FontWeight.bold),
-                    )),
-                Text(
-                  formatDateLong(DateTime.now()),
-                  style: AppTextStyles.bodySmall,
+        const CircleAvatar(
+          radius: 22,
+          backgroundColor: AppColors.surface2,
+          child: Icon(Icons.person, color: AppColors.textPrimary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Obx(
+                () => Text(
+                  'Halo, ${controller.userName} 💪',
+                  style: AppTextStyles.bodyLarge
+                      .copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-          ],
+              ),
+              Text(
+                formatDateLong(DateTime.now()),
+                style: AppTextStyles.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
         Stack(
+          clipBehavior: Clip.none,
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: AppColors.textPrimary),
-              onPressed: () {},
+              icon: const Icon(
+                Icons.notifications_none,
+                color: AppColors.textPrimary,
+              ),
+              onPressed: () => controller.openNotifications(),
             ),
             if (controller.hasNotification.value)
               Positioned(
@@ -256,8 +264,12 @@ class HomeView extends GetView<HomeController> {
       children: [
         _buildActionItem(Icons.qr_code_scanner, 'Check-in', () => Get.toNamed(Routes.CHECKIN)),
         _buildActionItem(Icons.people_outline, 'Trainer', controller.openTrainerList),
-        _buildActionItem(Icons.auto_graph, 'Progress', () {}),
-        _buildActionItem(Icons.chat_bubble_outline, 'Chat', () {}),
+        _buildActionItem(Icons.auto_graph, 'Progress', () => Get.toNamed(Routes.PROGRESS)),
+        _buildActionItem(
+          Icons.chat_bubble_outline,
+          'Chat',
+          () => ChatController.openFromMenu(),
+        ),
       ],
     );
   }

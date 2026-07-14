@@ -33,7 +33,19 @@ import '../modules/checkin/views/checkin_view.dart';
 import '../modules/checkin/views/face_register_view.dart';
 import '../modules/checkin/bindings/checkin_binding.dart';
 
+import '../modules/chat/views/chat_view.dart';
+import '../modules/chat/views/chat_detail_view.dart';
+import '../modules/chat/bindings/chat_binding.dart';
+import '../modules/notification/views/notification_list_view.dart';
+import '../modules/notification/bindings/notification_binding.dart';
+import '../modules/feedback/views/feedback_view.dart';
+import '../modules/feedback/bindings/feedback_binding.dart';
+import '../modules/progress/views/progress_view.dart';
+import '../modules/progress/bindings/progress_binding.dart';
+
 class AppPages {
+  static const INITIAL = Routes.SPLASH;
+
   static final routes = [
     GetPage(
       name: Routes.SPLASH,
@@ -123,6 +135,31 @@ class AppPages {
       name: Routes.WORKOUT_TRACKING,
       page: () => const WorkoutTrackingView(),
       binding: WorkoutBinding(),
+    ),
+    GetPage(
+      name: Routes.CHAT,
+      page: () => const ChatListView(),
+      binding: ChatBinding(),
+    ),
+    GetPage(
+      name: Routes.CHAT_DETAIL,
+      page: () => ChatDetailView(),
+      binding: ChatBinding(),
+    ),
+    GetPage(
+      name: Routes.NOTIFICATION,
+      page: () => const NotificationListView(),
+      binding: NotificationBinding(),
+    ),
+    GetPage(
+      name: Routes.FEEDBACK,
+      page: () => const FeedbackView(),
+      binding: FeedbackBinding(),
+    ),
+    GetPage(
+      name: Routes.PROGRESS,
+      page: () => const ProgressView(),
+      binding: ProgressBinding(),
     ),
   ];
 }

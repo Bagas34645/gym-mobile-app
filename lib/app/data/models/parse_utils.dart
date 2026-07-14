@@ -14,7 +14,21 @@ int? asInt(dynamic value) {
 
 DateTime? asDate(dynamic value) {
   if (value == null) return null;
-  return DateTime.tryParse(value.toString());
+  if (value is DateTime) return value;
+  final raw = value.toString().trim();
+  if (raw.isEmpty) return null;
+  return DateTime.tryParse(raw) ??
+      DateTime.tryParse(raw.replaceFirst(' ', 'T'));
+}
+
+String? asString(dynamic value) {
+  if (value == null) return null;
+  return value.toString();
+}
+
+String? asString(dynamic value) {
+  if (value == null) return null;
+  return value.toString();
 }
 
 List<String> asStringList(dynamic value) {
