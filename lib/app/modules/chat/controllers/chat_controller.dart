@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:get/get.dart';
+import 'package:gym_mobile_flutter/app/data/services/api_client.dart';
+import 'package:gym_mobile_flutter/app/data/services/chat_inbox_service.dart';
 import 'package:gym_mobile_flutter/app/data/services/chat_service.dart';
 import 'package:gym_mobile_flutter/app/data/services/session_service.dart';
 import 'package:gym_mobile_flutter/app/routes/app_routes.dart';
@@ -13,36 +16,63 @@ class ChatController extends GetxController {
   final isSending = false.obs;
 
   final currentConversationId = RxnString();
-  String? _listeningConversationId;
 
   @override
   void onInit() {
     super.onInit();
-    fetchConversations();
-    ChatService.instance.initEcho();
-  }
-
-  @override
-  void onClose() {
-    if (_listeningConversationId != null) {
-      ChatService.instance.echo?.leave('chat.$_listeningConversationId');
+    unawaited(ChatService.instance.initEcho());
+    if (Get.isRegistered<ChatInboxService>()) {
+      unawaited(ChatInboxService.to.start());
     }
-    super.onClose();
   }
 
-  Future<void> fetchConversations() async {
+  /// Entry from Home / Profile → opens typing screen directly.
+  static Future<void> openFromMenu() async {
+    if (!Get.isRegistered<ChatController>()) {
+      Get.put(ChatController());
+    }
+    if (Get.isRegistered<ChatInboxService>()) {
+      ChatInboxService.to.clearChatUnreadFlag();
+    }
+    await Get.find<ChatController>().openSupportChat();
+  }
+
+  Future<void> openSupportChat() async {
     isLoading.value = true;
+    try {
+      await fetchConversations(showError: false);
+      final existing = activeConversation;
+      if (existing != null) {
+        await _bindConversation(existing);
+      } else {
+        currentConversationId.value = null;
+        messages.clear();
+      }
+    } finally {
+      isLoading.value = false;
+    }
+
+    if (Get.currentRoute == Routes.CHAT_DETAIL) {
+      return;
+    }
+    if (Get.currentRoute == Routes.CHAT) {
+      Get.offNamed(Routes.CHAT_DETAIL);
+    } else {
+      Get.toNamed(Routes.CHAT_DETAIL);
+    }
+  }
+
+  Future<void> fetchConversations({bool showError = true}) async {
     try {
       final data = await ChatService.instance.getConversations();
       conversations.value = data
-          .map(
-            (json) => ConversationModel.fromJson(json as Map<String, dynamic>),
-          )
+          .map((json) => ConversationModel.fromJson(_asMap(json)))
           .toList();
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat percakapan: $e');
-    } finally {
-      isLoading.value = false;
+      if (showError) {
+        _showError('Gagal memuat percakapan', e);
+      }
+      if (showError) rethrow;
     }
   }
 
@@ -55,162 +85,128 @@ class ChatController extends GetxController {
     return null;
   }
 
-  Future<void> startOrOpenChat({String? initialMessage}) async {
-    final existing = activeConversation;
-    if (existing != null) {
-      await openChat(existing);
-      if (initialMessage != null && initialMessage.trim().isNotEmpty) {
-        await sendMessage(initialMessage);
-      }
-      return;
-    }
-
-    final message = initialMessage?.trim();
-    if (message == null || message.isEmpty) {
-      return;
-    }
-
-    isSending.value = true;
-    try {
-      final response = await ChatService.instance.startConversation(
-        'Admin Support',
-        message,
-      );
-
-      final conversation = ConversationModel.fromJson(response);
-      if (!conversations.any((c) => c.id == conversation.id)) {
-        conversations.insert(0, conversation);
-      }
-
-      await openChat(conversation);
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memulai percakapan: $e');
-    } finally {
-      isSending.value = false;
+  Future<void> _bindConversation(ConversationModel conversation) async {
+    currentConversationId.value = conversation.id;
+    messages.clear();
+    unawaited(ChatService.instance.initEcho());
+    await fetchMessages(conversation.id);
+    if (Get.isRegistered<ChatInboxService>()) {
+      ChatInboxService.to.watchConversation(conversation.id);
+      ChatInboxService.to.clearChatUnreadFlag();
     }
   }
 
   Future<void> openChat(ConversationModel conversation) async {
-    if (_listeningConversationId != null &&
-        _listeningConversationId != conversation.id) {
-      ChatService.instance.echo?.leave('chat.$_listeningConversationId');
-      _listeningConversationId = null;
+    await _bindConversation(conversation);
+    if (Get.currentRoute != Routes.CHAT_DETAIL) {
+      Get.toNamed(Routes.CHAT_DETAIL);
     }
-
-    currentConversationId.value = conversation.id;
-    messages.clear();
-    await Get.toNamed(Routes.CHAT_DETAIL);
-
-    if (!ChatService.instance.isInitialized) {
-      await ChatService.instance.initEcho();
-    }
-
-    await fetchMessages(conversation.id);
-    listenToMessages(conversation.id);
   }
 
   Future<void> fetchMessages(String conversationId) async {
     isLoading.value = true;
     try {
       final user = SessionService.to.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        throw ApiException('Sesi tidak ditemukan. Silakan login ulang.');
+      }
 
       final data = await ChatService.instance.getMessages(conversationId);
       messages.value = data
-          .map(
-            (json) =>
-                MessageModel.fromJson(json as Map<String, dynamic>, user.id),
-          )
+          .map((json) => MessageModel.fromJson(_asMap(json), user.id))
           .toList();
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat pesan: $e');
+      _showError('Gagal memuat pesan', e);
     } finally {
       isLoading.value = false;
     }
   }
 
-  void listenToMessages(String conversationId) {
-    final echo = ChatService.instance.echo;
-    if (echo == null) {
-      Get.log('Echo unavailable — chat will not update in realtime');
-      return;
-    }
-
-    final user = SessionService.to.currentUser;
-    if (user == null) return;
-
-    if (_listeningConversationId != null &&
-        _listeningConversationId != conversationId) {
-      echo.leave('chat.$_listeningConversationId');
-    }
-
-    _listeningConversationId = conversationId;
-    echo.private('chat.$conversationId').listen('.message.sent', (event) {
-      final data = event is Map ? Map<String, dynamic>.from(event) : <String, dynamic>{};
-      if (!data.containsKey('id')) return;
-
-      final newMessage = MessageModel.fromJson(data, user.id);
-      if (!messages.any((m) => m.id == newMessage.id)) {
-        messages.add(newMessage);
-      }
-    });
-  }
-
   Future<void> sendMessage(String text) async {
-    if (text.trim().isEmpty || currentConversationId.value == null) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
 
     isSending.value = true;
     try {
       final user = SessionService.to.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        throw ApiException('Sesi tidak ditemukan. Silakan login ulang.');
+      }
+
+      if (currentConversationId.value == null) {
+        final response = await ChatService.instance.startConversation(
+          'Admin Support',
+          trimmed,
+        );
+        final conversation = ConversationModel.fromJson(response);
+        if (!conversations.any((c) => c.id == conversation.id)) {
+          conversations.insert(0, conversation);
+        }
+        currentConversationId.value = conversation.id;
+
+        try {
+          messages.assignAll(
+            await _loadMessagesAsModels(conversation.id, user.id),
+          );
+        } catch (_) {
+          messages.assignAll([
+            MessageModel(
+              id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+              conversationId: conversation.id,
+              senderId: user.id,
+              message: trimmed,
+              createdAt: DateTime.now(),
+              isMe: true,
+            ),
+          ]);
+        }
+        if (Get.isRegistered<ChatInboxService>()) {
+          ChatInboxService.to.watchConversation(conversation.id);
+        }
+        return;
+      }
 
       final res = await ChatService.instance.sendMessage(
         currentConversationId.value!,
-        text,
+        trimmed,
       );
       final newMessage = MessageModel.fromJson(res, user.id);
-
       if (!messages.any((m) => m.id == newMessage.id)) {
         messages.add(newMessage);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mengirim pesan: $e');
+      _showError('Gagal mengirim pesan', e);
     } finally {
       isSending.value = false;
     }
   }
 
-  void leaveChat(String conversationId) {
-    ChatService.instance.echo?.leave('chat.$conversationId');
-    if (_listeningConversationId == conversationId) {
-      _listeningConversationId = null;
-    }
-    currentConversationId.value = null;
+  Future<List<MessageModel>> _loadMessagesAsModels(
+    String conversationId,
+    String userId,
+  ) async {
+    final data = await ChatService.instance.getMessages(conversationId);
+    return data
+        .map((json) => MessageModel.fromJson(_asMap(json), userId))
+        .toList();
   }
 
-  Future<String?> promptInitialMessage() async {
-    final controller = TextEditingController();
-    final result = await Get.dialog<String>(
-      AlertDialog(
-        title: const Text('Chat dengan Admin'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Tulis pesan untuk admin...',
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: Get.back, child: const Text('Batal')),
-          TextButton(
-            onPressed: () => Get.back(result: controller.text.trim()),
-            child: const Text('Kirim'),
-          ),
-        ],
-      ),
+  /// Leaving chat must NOT unsubscribe Echo — inbox notifications rely on it.
+  void leaveChat([String? conversationId]) {}
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    throw ApiException('Format data chat tidak valid');
+  }
+
+  void _showError(String title, Object error) {
+    final message = error is ApiException ? error.message : error.toString();
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 4),
     );
-    controller.dispose();
-    return result;
   }
 }

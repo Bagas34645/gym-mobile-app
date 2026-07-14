@@ -15,22 +15,18 @@ class ChatDetailView extends GetView<ChatController> {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop && controller.currentConversationId.value != null) {
-          controller.leaveChat(controller.currentConversationId.value!);
-        }
+        if (!didPop) return;
+        // Defer cleanup so AppBar doesn't rebuild mid-pop animation.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.leaveChat();
+        });
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Obx(() {
-            final convId = controller.currentConversationId.value;
-            final conv = controller.conversations.firstWhereOrNull(
-              (c) => c.id == convId,
-            );
-            return Text(
-              conv?.otherPartyName ?? 'Obrolan',
-              style: AppTextStyles.headingSmall,
-            );
-          }),
+          title: Text(
+            'Admin Support',
+            style: AppTextStyles.headingSmall,
+          ),
           backgroundColor: AppColors.background,
           elevation: 0,
         ),
@@ -44,12 +40,9 @@ class ChatDetailView extends GetView<ChatController> {
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  reverse: true, // Show latest messages at the bottom
+                  reverse: true,
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
-                    // Because it's reversed, we need to adjust the index for data access if needed
-                    // but usually we just reverse the list data before or use it as is if fetched that way.
-                    // Here we assume messages is sorted by newest first for reverse list.
                     final message = controller
                         .messages[controller.messages.length - 1 - index];
                     return _buildMessageBubble(message);

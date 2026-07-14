@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/progress_service.dart';
+import '../../../data/services/realtime_cleanup.dart';
 import '../../../data/services/session_service.dart';
 import '../../../routes/app_routes.dart';
 
@@ -72,17 +74,33 @@ class ProfileController extends GetxController {
   Future<void> saveProfile() async {
     isSaving.value = true;
     try {
+      final weightKg = double.tryParse(
+        weightController.text.trim().replaceAll(',', '.'),
+      );
       await _session.updateProfile(
         name: nameController.text.trim().isEmpty
             ? null
             : nameController.text.trim(),
         age: int.tryParse(ageController.text.trim()),
         heightCm: int.tryParse(heightController.text.trim()),
-        weightKg: double.tryParse(weightController.text.trim()),
+        weightKg: weightKg,
         fitnessGoal: goalController.text.trim().isEmpty
             ? null
             : goalController.text.trim(),
       );
+
+      // Sync body weight into progress tracking so Analisis Progress stays current.
+      if (weightKg != null && weightKg >= 20 && weightKg <= 500) {
+        try {
+          await ProgressService.instance.storeWeight(
+            weightKg: weightKg,
+            notes: 'Dari profil',
+          );
+        } catch (_) {
+          // Same-day duplicate is fine; progress page still reads profile fallback.
+        }
+      }
+
       Get.back();
       _showInfo('Berhasil', 'Profil berhasil diperbarui');
     } on ApiException catch (e) {
@@ -125,8 +143,9 @@ class ProfileController extends GetxController {
   }
 
   Future<void> logout() async {
+    disconnectChatRealtime();
     await AuthService.instance.logout();
-    _session.clear();
+    _session.user.value = null;
     Get.offAllNamed(Routes.LOGIN);
   }
 

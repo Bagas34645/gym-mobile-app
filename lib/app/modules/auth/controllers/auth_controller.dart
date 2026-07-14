@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/chat_inbox_service.dart';
 import '../../../data/services/google_auth_service.dart';
 import '../../../data/services/session_service.dart';
 import '../../../data/services/token_storage.dart';
@@ -329,6 +330,9 @@ class AuthController extends GetxController {
     try {
       await SessionService.to.loadProfile();
     } catch (_) {}
+    if (Get.isRegistered<ChatInboxService>()) {
+      unawaited(ChatInboxService.to.start());
+    }
     Get.offAllNamed(Routes.HOME);
   }
 

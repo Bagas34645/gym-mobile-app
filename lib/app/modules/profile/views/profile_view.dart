@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gym_mobile_flutter/app/routes/app_routes.dart';
 import '../controllers/profile_controller.dart';
 import '../../../data/models/user_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/gym_button.dart';
 import '../../../../core/widgets/gym_text_field.dart';
+import '../../chat/controllers/chat_controller.dart';
+import '../../../routes/app_routes.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -91,11 +92,16 @@ class ProfileView extends GetView<ProfileController> {
                 _buildMenuItem(
                   Icons.chat_bubble_outline,
                   'Pesan / Chat',
-                  () => Get.toNamed(Routes.CHAT),
+                  () => ChatController.openFromMenu(),
                 ),
               ]),
               const SizedBox(height: 24),
               _buildMenuSection('Lainnya', [
+                _buildMenuItem(
+                  Icons.rate_review_outlined,
+                  'Kirim Feedback',
+                  () => Get.toNamed(Routes.FEEDBACK),
+                ),
                 _buildMenuItem(
                   Icons.privacy_tip_outlined,
                   'Kebijakan Privasi',

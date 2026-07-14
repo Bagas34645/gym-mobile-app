@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import 'api_client.dart';
-import 'chat_service.dart';
 import 'google_auth_service.dart';
 import 'token_storage.dart';
 
@@ -200,7 +199,6 @@ class AuthService {
     try {
       await GoogleAuthService.instance.signOut();
     } catch (_) {}
-    ChatService.instance.disconnect();
     await TokenStorage.instance.clear();
   }
 }

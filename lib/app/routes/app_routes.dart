@@ -19,6 +19,7 @@ abstract class Routes {
   static const PROGRESS = '/progress';
   static const NOTIFICATION = '/notification';
   static const SUPPORT = '/support';
+  static const FEEDBACK = '/feedback';
   static const PROFILE = '/profile';
   static const MEMBERSHIP_HISTORY = '/membership-history';
   static const CHAT = '/chat';
