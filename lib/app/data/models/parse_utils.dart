@@ -26,6 +26,11 @@ String? asString(dynamic value) {
   return value.toString();
 }
 
+String? asString(dynamic value) {
+  if (value == null) return null;
+  return value.toString();
+}
+
 List<String> asStringList(dynamic value) {
   if (value is List) {
     return value.map((e) => e.toString()).toList();
